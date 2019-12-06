@@ -10,9 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using VkNet;
-using VkNet.Abstractions;
-using VkNet.Model;
 using vkBotCore.Plugins;
 using vkBotCore.Plugins.Attributes;
 
@@ -27,14 +24,13 @@ namespace vkBotCore
         public MessageHandler MessageHandler { get; set; }
 
         public IConfiguration Configuration { get; private set; }
-        public IVkApi VkApi { get; private set; }
+        public VkCoreApi VkApi { get; private set; }
 
         public BotCore(IConfiguration configuration)
         {
             Configuration = configuration;
 
-            VkApi = new VkApi();
-            VkApi.Authorize(new ApiAuthParams { AccessToken = Configuration["Config:AccessToken"] });
+            VkApi = new VkCoreApi(configuration);
 
             Log = new LogChat(this);
 
