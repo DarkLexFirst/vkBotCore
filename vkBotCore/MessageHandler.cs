@@ -9,39 +9,39 @@ namespace vkBotCore
 {
     public class MessageHandler
     {
-        public BotCore Core { get; set; }
+        public VkCoreApiBase VkApi { get; set; }
 
-        public MessageHandler(BotCore core)
+        public MessageHandler(VkCoreApiBase vkApi)
         {
-            Core = core;
+            VkApi = vkApi;
         }
 
-        public virtual void OnMessage(User user, string message, long peerId, Message messageData, string url)
+        public virtual void OnMessage(User user, string message, long peerId, Message messageData, long groupId)
         {
-            var chat = Core.GetChat(peerId);
+            var chat = VkApi.GetChat(peerId);
             if ((message.StartsWith("/") || message.StartsWith(".")) && message.Length != 1)
             {
                 try
                 {
                     message = message.Replace("ё", "е");
-                    Core.PluginManager.HandleCommand(user, chat, message, messageData, url);
+                    VkApi.Core.PluginManager.HandleCommand(user, chat, message, messageData, groupId);
 
                     message = message.Substring(1);
                     var args = message.Split(' ').ToList();
                     string commandName = args.First();
                     args.Remove(commandName);
 
-                    chat.OnCommand(user, commandName.ToLower(), args.ToArray(), messageData, url);
+                    chat.OnCommand(user, commandName.ToLower(), args.ToArray(), messageData, groupId);
                 }
                 catch(Exception e)
                 {
                     chat.SendMessage("Комманда задана неверно!");
-                    Core.Log.Error(e.ToString());
+                    VkApi.Core.Log.Error(e.ToString());
                 }
                 return;
             }
 
-            chat.OnMessasge(user, message, messageData, url);
+            chat.OnMessasge(user, message, messageData, groupId);
         }
 
         public void SendMessage(string message, long peerId)
@@ -56,12 +56,12 @@ namespace vkBotCore
 
         public void SendMessage(MessagesSendParams message)
         {
-            Core.VkApi.Messages.Send(message);
+            VkApi.Messages.Send(message);
         }
 
         public void SendSticker(MessagesSendStickerParams message)
         {
-            Core.VkApi.Messages.SendSticker(message);
+            VkApi.Messages.SendSticker(message);
         }
     }
 }

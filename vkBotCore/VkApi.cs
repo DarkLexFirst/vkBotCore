@@ -9,31 +9,55 @@ using VkNet.Model;
 
 namespace vkBotCore
 {
-    public class VkCoreApi : VkApi
+    public class VkCoreApi : VkCoreApiBase
     {
-        Dictionary<long, IVkApi> _vkApi { get; set; }
-        public IConfiguration Configuration { get; private set; }
+        Dictionary<long, VkCoreApiBase> _vkApi { get; set; }
 
-        public VkCoreApi(IConfiguration configuration)
+        public VkCoreApi(BotCore core) : base(core, 0)
         {
-            _vkApi = new Dictionary<long, IVkApi>();
+            _vkApi = new Dictionary<long, VkCoreApiBase>();
 
-            var accesToken = Configuration.GetValue<string>($"Config:AccessToken", null);
+            var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
             if (accesToken != null)
                 Authorize(new ApiAuthParams { AccessToken = accesToken });
         }
 
-        public IVkApi Get(long groupId)
+        public VkCoreApiBase Get(long groupId)
         {
             if (_vkApi.ContainsKey(groupId))
                 return _vkApi[groupId];
-            var api = new VkApi();
-            var accesToken = Configuration.GetValue<string>($"Config:AccessToken:{groupId}", null);
+            var api = new VkCoreApiBase(Core, groupId);
+            var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
             if (accesToken == null)
                 return this;
             api.Authorize(new ApiAuthParams { AccessToken = accesToken });
             _vkApi.Add(groupId, api);
             return api;
+        }
+    }
+
+    public class VkCoreApiBase : VkApi
+    {
+        public BotCore Core { get; private set; }
+
+        public long GroupId { get; private set; }
+
+        private Dictionary<long, Chat> Chats { get; set; }
+        public MessageHandler MessageHandler { get; private set; }
+
+        public VkCoreApiBase(BotCore core, long groupId)
+        {
+            Core = core;
+            GroupId = groupId;
+            Chats = new Dictionary<long, Chat>();
+            MessageHandler = new MessageHandler(this);
+        }
+
+        public Chat GetChat(long peerId)
+        {
+            if (!Chats.ContainsKey(peerId))
+                Chats.Add(peerId, new Chat(this, peerId));
+            return Chats[peerId];
         }
     }
 }

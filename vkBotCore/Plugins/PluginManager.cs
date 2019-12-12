@@ -39,6 +39,8 @@ using Newtonsoft.Json.Serialization;
 using VkNet.Model;
 using vkBotCore.Plugins.Commands;
 using vkBotCore.Controllers;
+using Microsoft.Extensions.Configuration;
+using vkBotCore.Configuration;
 
 namespace vkBotCore.Plugins
 {
@@ -137,7 +139,7 @@ namespace vkBotCore.Plugins
                                 catch (Exception ex)
                                 {
                                     //Log.WarnFormat("Failed loading plugin type {0} as a plugin.", type);
-                                    Core.Log.Warn($"Plugin loader caught exception, but is moving on.\n{ex}");
+                                    Core.Log.Warn($"Plugin \"{type.Name}\" loader caught exception, but is moving on.\n{ex}");
                                 }
                             }
                         }
@@ -367,14 +369,14 @@ namespace vkBotCore.Plugins
             }
         }
 
-        public object HandleCommand(User user, Chat chat, string cmdline, Message messageData, string url)
+        public object HandleCommand(User user, Chat chat, string cmdline, Message messageData, long groupId)
         {
             var split = Regex.Split(cmdline, "(?<=^[^\"]*(?:\"[^\"]*\"[^\"]*)*) (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
             string commandName = split[0].Trim('/').Trim('.').ToLower();
             string[] arguments = split.Skip(1).ToArray();
 
             Command command = null;
-            command = GetCommand(commandName);
+            command = GetCommand(commandName, groupId);
 
             //if (arguments.Length > 0 && command == null)
             //{
@@ -394,14 +396,10 @@ namespace vkBotCore.Plugins
             {
                 try
                 {
-                    if (url != null)
-                    {
-                        var parrent = overload.Method.DeclaringType;
-                        if (parrent != typeof(BaseCommands) && parrent.Name != url)
-                            continue;
-                    }
-
                     MethodInfo method = overload.Method;
+
+                    if (!IsAvailable(method, groupId))
+                        continue;
 
                     if (ExecuteCommand(method, user, chat, arguments, messageData, out object retVal))
                     {
@@ -421,7 +419,20 @@ namespace vkBotCore.Plugins
             return null;
         }
 
-        private Command GetCommand(string commandName)
+        internal bool IsAvailable(MethodInfo method, long groupId)
+        {
+            if (groupId == 0) return true;
+            var parrent = method.DeclaringType;
+            string _namespace = GetNamespaceParrant(parrent);
+            return _namespace == GetNamespaceParrant(GetType()) || Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[] { _namespace }).Contains(_namespace);
+        }
+
+        private string GetNamespaceParrant(Type type)
+        {
+            return type.Namespace.Split('.').First();
+        }
+
+        private Command GetCommand(string commandName, long groupId)
         {
             Command command;
             if (Commands.ContainsKey(commandName))
@@ -432,6 +443,8 @@ namespace vkBotCore.Plugins
             {
                 command = Commands.Values.FirstOrDefault(cmd => cmd.Overloads.Values.Any(overload => overload.Aliases != null && overload.Aliases.Any(s => s == commandName)));
             }
+            if (!command.Overloads.Values.Any(o => IsAvailable(o.Method, groupId)))
+                return null;
             return command;
         }
 
@@ -514,7 +527,7 @@ namespace vkBotCore.Plugins
                         long id;
                         string _id = args[i++].Split(' ', '|').First();
                         if (_id.Length < 4 || !long.TryParse(_id.Substring(3), out id)) return false;
-                        objectArgs[k] = new User(Core, id);
+                        objectArgs[k] = new User(user.VkApi, id);
                         continue;
                     }
 
@@ -647,16 +660,12 @@ namespace vkBotCore.Plugins
             return false;
         }
 
-        internal void PluginCallbackHandler(Updates updates, string url)
+        internal void PluginCallbackHandler(Updates updates, long groupId)
         {
-            foreach(var method in _callbackHandlers)
+            foreach (var method in _callbackHandlers)
             {
-                if (url != null)
-                {
-                    var parrent = method.Key.DeclaringType;
-                    if (parrent != typeof(BaseCommands) && parrent.Name != url)
-                        continue;
-                }
+                if (!IsAvailable(method.Key, groupId))
+                    continue;
 
                 if (method.Value != updates.Type) continue;
                 var _method = method.Key;

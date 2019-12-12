@@ -24,18 +24,18 @@ namespace vkBotCore.Plugins.Commands
                 {
                     string line = "";
 
-                    var overloadsCount = command.Overloads.Count(o => !o.Value.IsHidden);
+                    var overloadsCount = command.Overloads.Count(o => IsAvailabled(o.Value, context));
                     if (overloadsCount == 0)
                         continue;
                     else if (overloadsCount == 1)
-                        line = $"/{command.Name}{GenerateOverloadDescription(command.Overloads.Values.First(o => !o.IsHidden))}";
+                        line = $"/{command.Name}{GenerateOverloadDescription(command.Overloads.Values.First(o => IsAvailabled(o, context)))}";
                     else
                     {
                         var defaultOverloads = command.Overloads.Values.Where(o => Attribute.GetCustomAttribute(o.Method, typeof(DefaultCommand), false) as DefaultCommand != null);
                         if(defaultOverloads == null)
-                            line = GenerateFullCommandList(command);
+                            line = GenerateFullCommandList(context, command);
                         else
-                            line = GenerateFullCommandList(command.Name, defaultOverloads);
+                            line = GenerateFullCommandList(context, command.Name, defaultOverloads);
                     }
 
                     helpInfo += $"\n{line}";
@@ -54,20 +54,25 @@ namespace vkBotCore.Plugins.Commands
                 }
 
                 string helpInfo = $"/{command.Name}\n\n";
-                helpInfo += GenerateFullCommandList(command);
+                helpInfo += GenerateFullCommandList(context, command);
 
                 context.Chat.SendMessage(helpInfo);
             }
         }
 
-        private static string GenerateFullCommandList(Command command)
+        private static bool IsAvailabled(Overload overload, CommandContext context)
         {
-            return GenerateFullCommandList(command.Name, command.Overloads.Values);
+            return !overload.IsHidden && context.Core.PluginManager.IsAvailable(overload.Method, context.Chat.VkApi.GroupId);
         }
 
-        private static string GenerateFullCommandList(string commandName, IEnumerable<Overload> overloads)
+        private static string GenerateFullCommandList(CommandContext context, Command command)
         {
-            return $"/{commandName}{string.Join($"\n/{commandName}", overloads.Where(o => !o.IsHidden).Select(o => GenerateOverloadDescription(o)))}";
+            return GenerateFullCommandList(context, command.Name, command.Overloads.Values);
+        }
+
+        private static string GenerateFullCommandList(CommandContext context, string commandName, IEnumerable<Overload> overloads)
+        {
+            return $"/{commandName}{string.Join($"\n/{commandName}", overloads.Where(o => IsAvailabled(o, context)).Select(o => GenerateOverloadDescription(o)))}";
         }
 
         private static string GenerateOverloadDescription(Overload overload)

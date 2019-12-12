@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using vkBotCore.Plugins;
+using VkNet.Abstractions;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
@@ -13,28 +14,28 @@ namespace vkBotCore
 {
     public class Chat
     {
-        public BotCore Core { get; set; }
+        public VkCoreApiBase VkApi { get; set; }
         public long PeerId { get; set; }
 
-        public Chat(BotCore core, long peerId)
+        public Chat(VkCoreApiBase vkApi, long peerId)
         {
-            Core = core;
+            VkApi = vkApi;
             PeerId = peerId;
         }
 
-        public virtual void OnMessasge(User user, string message, Message messageData, string url)
+        public virtual void OnMessasge(User user, string message, Message messageData, long groupId)
         {
 
         }
 
-        public virtual void OnCommand(User user, string command, string[] args, Message messageData, string url)
+        public virtual void OnCommand(User user, string command, string[] args, Message messageData, long groupId)
         {
             
         }
 
         public virtual void SendMessage(string message)
         {
-            Core.MessageHandler.SendMessage(message, PeerId);
+            VkApi.MessageHandler.SendMessage(message, PeerId);
         }
 
         public void SendMessage(object obj)
@@ -44,13 +45,13 @@ namespace vkBotCore
 
         public long[] GetAllChatAdministrators()
         {
-            var members = Core.VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
+            var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
             return members.Where(m => m.IsAdmin).Select(m => m.MemberId).ToArray();
         }
 
         public long[] GetAllChatMembers()
         {
-            var members = Core.VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Profiles;
+            var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Profiles;
             return members.Select(m => m.Id).ToArray();
         }
 

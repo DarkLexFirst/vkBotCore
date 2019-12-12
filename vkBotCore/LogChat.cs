@@ -14,10 +14,10 @@ namespace vkBotCore
         protected LogValueType MinValue { get; set; }
         protected LogValueType MaxValue { get; set; }
 
-        public LogChat(BotCore core) : base(core, core.Configuration.GetValue<long>("Config:Log:ChatId", -1))
+        public LogChat(VkCoreApiBase vkApi) : base(vkApi, vkApi.Core.Configuration.GetValue<long>("Config:Log:ChatId", -1))
         {
-            MinValue = Enum.Parse<LogValueType>(Core.Configuration["Config:Log:MinValue"]);
-            MaxValue = Enum.Parse<LogValueType>(Core.Configuration["Config:Log:MaxValue"]);
+            MinValue = Enum.Parse<LogValueType>(VkApi.Core.Configuration["Config:Log:MinValue"]);
+            MaxValue = Enum.Parse<LogValueType>(VkApi.Core.Configuration["Config:Log:MaxValue"]);
         }
 
         public void Debug(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.DEBUG, args);

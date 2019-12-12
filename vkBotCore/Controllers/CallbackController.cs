@@ -3,11 +3,10 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VkNet;
 using VkNet.Abstractions;
 using VkNet.Model;
-using VkNet.Model.RequestParams;
 using VkNet.Utils;
+using vkBotCore;
 
 namespace vkBotCore.Controllers
 {
@@ -38,36 +37,28 @@ namespace vkBotCore.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult Callback([FromBody] Updates updates)
-        {
-            return Callback(null, updates);
-        }
-
-        [HttpPost("{url}")]
-        public IActionResult Callback(string url, [FromBody] Updates updates)
+        public IActionResult Callback([FromBody]Updates updates)
         {
             try
             {
                 if (updates.SecretKey != _secretKey)
                     return BadRequest("Secret key is incorrect!");
-                if(!Core.PluginManager.Plugins.Any(p => p.GetType().Name == url))
-                    return BadRequest("Incorrent url! Possible option: /api/callback or /api/callback/{plugin name}");
 
-                Core.PluginManager.PluginCallbackHandler(updates, url);
+                Core.PluginManager.PluginCallbackHandler(updates, updates.GroupId);
 
                 switch (updates.Type)
                 {
                     case "confirmation":
-                        return Ok(_configuration["Config:Confirmation"]);
+                        return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
                     case "message_new":
                         {
-
-
+                            var vkApi = Core.VkApi.Get(updates.GroupId);
                             var msg = Message.FromJson(new VkResponse(updates.Object));
-                            var user = new User(Core, msg.FromId.Value);
 
-                            Core.MessageHandler.OnMessage(user, msg.Text, msg.PeerId.Value, msg, url);
+                            User user = null;
+                            try { user = new User(vkApi, msg.FromId.Value); } catch { return Ok("ok"); }
+
+                            vkApi.MessageHandler.OnMessage(user, msg.Text, msg.PeerId.Value, msg, updates.GroupId);
                             break;
                         }
                 }

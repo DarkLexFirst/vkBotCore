@@ -19,9 +19,7 @@ namespace vkBotCore
     {
         public LogChat Log { get; private set; }
 
-        private Dictionary<long, Chat> Chats { get; set; }
         public PluginManager PluginManager { get; set; }
-        public MessageHandler MessageHandler { get; set; }
 
         public IConfiguration Configuration { get; private set; }
         public VkCoreApi VkApi { get; private set; }
@@ -30,13 +28,9 @@ namespace vkBotCore
         {
             Configuration = configuration;
 
-            VkApi = new VkCoreApi(configuration);
+            VkApi = new VkCoreApi(this);
 
-            Log = new LogChat(this);
-
-            Chats = new Dictionary<long, Chat>();
-
-            MessageHandler = new MessageHandler(this);
+            Log = new LogChat(VkApi);
 
             PluginManager = new PluginManager(this);
             PluginManager.LoadPlugins();
@@ -65,13 +59,6 @@ namespace vkBotCore
 
             app.UseHttpsRedirection();
             app.UseMvc();
-        }
-
-        public Chat GetChat(long peerId)
-        {
-            if (!Chats.ContainsKey(peerId))
-                Chats.Add(peerId, new Chat(this, peerId));
-            return Chats[peerId];
         }
     }
 }

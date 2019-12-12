@@ -3,31 +3,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using vkBotCore.Configuration;
 
 namespace vkBotCore
 {
     public class User
     {
-        public BotCore Core { get; set; }
+        public VkCoreApiBase VkApi { get; set; }
 
         public long Id { get; set; }
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        public bool IsAdmin { get => Core.Configuration.GetValue("Config:Admins", new long[0]).Contains(Id); }
+        public bool IsAdmin { get => VkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id); }
 
-        public User(BotCore core, long id)
+        public User(VkCoreApiBase vkApi, long id)
         {
-            Core = core;
+            VkApi = vkApi;
             Id = id;
-            var u = GetApiUserPyId(core, id);
-            FirstName = u.FirstName;
-            LastName = u.LastName;
+            var u = GetApiUser();
+            FirstName = u?.FirstName;
+            LastName = u?.LastName;
         }
 
-        public User(long id, string firstName, string lastName)
+        public User(VkCoreApiBase vkApi, long id, string firstName, string lastName)
         {
+            VkApi = vkApi;
             FirstName = firstName;
             LastName = lastName;
             Id = id;
@@ -47,10 +49,15 @@ namespace vkBotCore
         {
             return $"@id{id} ({value})";
         }
-
-        public static VkNet.Model.User GetApiUserPyId(BotCore core, long id)
+        public VkNet.Model.User GetApiUser()
         {
-            return core.VkApi.Users.Get(new long[] { id }).First();
+            return GetApiUserPyId(VkApi, Id);
+        }
+
+        public static VkNet.Model.User GetApiUserPyId(VkCoreApiBase vkApi, long id)
+        {
+            if (id < 0) return null;
+            return vkApi.Users.Get(new long[] { id }).First();
         }
 
         public override bool Equals(object obj) => obj is User user && Id == user.Id;
