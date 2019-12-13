@@ -2,8 +2,8 @@
 using vkBotCore;
 using vkBotCore.Plugins;
 using vkBotCore.Plugins.Attributes;
-using VkNet.Model;
 using VkNet.Utils;
+using Message = VkNet.Model.Message;
 
 namespace TestPlugin
 {
@@ -59,10 +59,20 @@ namespace TestPlugin
         }
 
         [CallbackReceive("message_new")]
-        public void CallbackHandler(Updates updates, BotCore core)
+        public Updates CallbackMessageHandler(Updates updates, VkCoreApiBase vkApi)
         {
             var msg = Message.FromJson(new VkResponse(updates.Object));
-            core.Log.Debug($"message from Group:{updates.GroupId} and Chat:{msg.ChatId} by {msg.FromId} Action:{msg.Action?.Type?.ToString() ?? "text"}  \"{msg.Text}\"");
+            vkApi.Core.Log.Debug($"message from Group:{updates.GroupId} and Chat:{msg.ChatId} by {msg.FromId} Action:{msg.Action?.Type?.ToString() ?? "text"}  \"{msg.Text}\"");
+            return updates;
+        }
+
+        [CallbackReceive("vkpay_transaction")]
+        public Updates CallbackVkPayHandler(Updates updates, VkCoreApiBase vkApi)
+        {
+            var msg = new VkResponse(updates.Object);
+            var user = new User(vkApi, msg["from_id"]);
+            vkApi.Core.Log.Debug($"amount: {msg["amount"] / 1000}, from: {user.FirstName} {user.LastName}, description: {msg["description"]}");
+            return updates;
         }
     }
 }

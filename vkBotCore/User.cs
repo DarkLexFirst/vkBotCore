@@ -47,14 +47,14 @@ namespace vkBotCore
 
         public static string GetMentionLine(long id, string value)
         {
-            return $"@id{id} ({value})";
+            return $"[id{id}|{value}]";
         }
         public VkNet.Model.User GetApiUser()
         {
-            return GetApiUserPyId(VkApi, Id);
+            return GetApiUserById(VkApi, Id);
         }
 
-        public static VkNet.Model.User GetApiUserPyId(VkCoreApiBase vkApi, long id)
+        public static VkNet.Model.User GetApiUserById(VkCoreApiBase vkApi, long id)
         {
             if (id < 0) return null;
             return vkApi.Users.Get(new long[] { id }).First();

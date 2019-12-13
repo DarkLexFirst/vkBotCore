@@ -33,6 +33,32 @@ namespace vkBotCore
             
         }
 
+        public void Pin(long messageId)
+        {
+            VkApi.Messages.Pin(PeerId, (ulong)messageId);
+        }
+
+        public void Unpin()
+        {
+            VkApi.Messages.Unpin(PeerId);
+        }
+
+        public bool TryKick(User user)
+        {
+            return TryKick(user.Id);
+        }
+
+        public bool TryKick(long id)
+        {
+            try { Kick(id); } catch { return false; }
+            return true;
+        }
+
+        public void Kick(long id)
+        {
+            VkApi.Messages.RemoveChatUser((ulong)PeerId % 2000000000, id);
+        }
+
         public virtual void SendMessage(string message)
         {
             VkApi.MessageHandler.SendMessage(message, PeerId);
@@ -41,6 +67,11 @@ namespace vkBotCore
         public void SendMessage(object obj)
         {
             SendMessage(obj.ToString());
+        }
+
+        public bool HavePermissions()
+        {
+            return GetAllChatAdministrators().Contains(VkApi.GroupId);
         }
 
         public long[] GetAllChatAdministrators()
@@ -58,6 +89,11 @@ namespace vkBotCore
         public string GetEveryoneMentionLine(string val)
         {
             return string.Join("", GetAllChatMembers().Select(m => User.GetMentionLine(m, val)));
+        }
+
+        public IEnumerable<string> GetEveryoneMentions(string val)
+        {
+            return GetAllChatMembers().Select(m => User.GetMentionLine(m, val));
         }
     }
 }

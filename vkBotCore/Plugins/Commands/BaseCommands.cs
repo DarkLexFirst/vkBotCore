@@ -113,7 +113,12 @@ namespace vkBotCore.Plugins.Commands
         private static void Everyone(CommandContext context, params string[] message)
         {
             if (context.Sender.IsAdmin)
-                context.Chat.SendMessage($"{context.Chat.GetEveryoneMentionLine("͟")}{string.Join(" ", message)}");
+            {
+                var mentions = context.Chat.GetEveryoneMentions("͟");
+                int k = 100;
+                for (var i = 0; i < mentions.Count(); i += k)
+                    context.Chat.SendMessage($"{string.Join("", mentions.Skip(i).Take(k))}{string.Join(" ", message)}");
+            }
         }
 
         [Command(IsHidden = true)]

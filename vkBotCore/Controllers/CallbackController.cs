@@ -44,7 +44,8 @@ namespace vkBotCore.Controllers
                 if (updates.SecretKey != _secretKey)
                     return BadRequest("Secret key is incorrect!");
 
-                Core.PluginManager.PluginCallbackHandler(updates, updates.GroupId);
+                Core.PluginManager.PluginCallbackHandler(ref updates, updates.GroupId);
+                if (updates == null) return Ok("ok");
 
                 switch (updates.Type)
                 {
