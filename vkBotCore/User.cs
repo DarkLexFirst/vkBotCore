@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vkBotCore.Configuration;
+using VkNet.Model;
 
 namespace vkBotCore
 {
-    public class User
+    public class User : IEquatable<User>
     {
         public VkCoreApiBase VkApi { get; set; }
 
@@ -18,6 +19,8 @@ namespace vkBotCore
 
         public bool IsAdmin { get => VkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id); }
 
+        public Storage Storage { get; set; }
+
         public User(VkCoreApiBase vkApi, long id)
         {
             VkApi = vkApi;
@@ -25,6 +28,8 @@ namespace vkBotCore
             var u = GetApiUser();
             FirstName = u?.FirstName;
             LastName = u?.LastName;
+
+            Storage = new Storage(this);
         }
 
         public User(VkCoreApiBase vkApi, long id, string firstName, string lastName)
@@ -60,7 +65,8 @@ namespace vkBotCore
             return vkApi.Users.Get(new long[] { id }).First();
         }
 
-        public override bool Equals(object obj) => obj is User user && Id == user.Id;
+        public override bool Equals(object obj) => obj is User user && Equals(user);
+        public bool Equals(User other) => other.Id == Id;
 
         public override int GetHashCode() => (int)Id;
     }

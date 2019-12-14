@@ -532,6 +532,13 @@ namespace vkBotCore.Plugins
                         objectArgs[k] = value;
                         continue;
                     }
+                    if (parameter.ParameterType == typeof(long))
+                    {
+                        long value;
+                        if (!long.TryParse(args[i++], out value)) return false;
+                        objectArgs[k] = value;
+                        continue;
+                    }
                     if (parameter.ParameterType == typeof(bool))
                     {
                         bool value;

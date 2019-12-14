@@ -61,12 +61,13 @@ namespace vkBotCore
 
         public virtual void SendMessage(string message)
         {
-            VkApi.MessageHandler.SendMessage(message, PeerId);
+            if (!string.IsNullOrEmpty(message))
+                VkApi.MessageHandler.SendMessage(message, PeerId);
         }
 
         public void SendMessage(object obj)
         {
-            SendMessage(obj.ToString());
+            SendMessage(obj?.ToString());
         }
 
         public bool HavePermissions()
