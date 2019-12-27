@@ -118,7 +118,12 @@ namespace vkBotCore
                 {
                     _storage.Add(key, value);
                     if (_keys != null)
-                        _keys.Add(key);
+                    {
+                        if (value == null)
+                            _keys.Remove(key);
+                        else
+                            _keys.Add(key);
+                    }
                 }
                 if (forced)
                     Set(key, value);

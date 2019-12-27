@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace vkBotCore
 {
-    public class Program
+    public class Startup
     {
         public static void Main(string[] args)
         {

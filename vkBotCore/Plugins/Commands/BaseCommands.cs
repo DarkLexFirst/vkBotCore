@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -112,7 +113,8 @@ namespace vkBotCore.Plugins.Commands
         [Command(IsHidden = true)]
         private static void Everyone(CommandContext context, params string[] message)
         {
-            if (context.Sender.IsAdmin)
+            bool baseCommandsAllowed = context.Core.Configuration.GetValue("Plugins:BaseCommands:Allowed", false);
+            if (context.Sender.IsAdmin || (baseCommandsAllowed && context.Sender.IsChatAdmin(context.Chat)))
             {
                 var mentions = context.Chat.GetEveryoneMentions("͟");
                 int k = 100;
