@@ -20,9 +20,12 @@ namespace vkBotCore
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseUrls("http://*:80")
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        {
+            string port = args.Length > 0 ? port = args[0] : "80";
+            return WebHost.CreateDefaultBuilder(args)
+                .UseUrls($"http://*:{port}")
                 .UseStartup<BotCore>();
+        }
     }
 }
