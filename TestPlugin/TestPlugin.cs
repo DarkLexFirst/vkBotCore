@@ -2,6 +2,9 @@
 using vkBotCore;
 using vkBotCore.Plugins;
 using vkBotCore.Plugins.Attributes;
+using VkNet.Enums.SafetyEnums;
+using VkNet.Model.Keyboard;
+using VkNet.Model.RequestParams;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
 
@@ -56,6 +59,25 @@ namespace TestPlugin
         {
             if (context.Sender.IsAdmin)
                 context.Chat.SendMessage($"{cmd}");
+        }
+
+        [Command(IsHidden = true)]
+        private static void Test3Command(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                var k = new MessageKeyboard();
+                k.OneTime = true;
+                //k.Inline = true;
+                k.Buttons = new MessageKeyboardButton[][] { new MessageKeyboardButton[] { new MessageKeyboardButton() { Color = KeyboardButtonColor.Negative, Action = new MessageKeyboardButtonAction() { Type = KeyboardButtonActionType.Text, Label = "click me", Payload = "{\"button\": \"click\"}" } } } };
+                context.Chat.VkApi.MessageHandler.SendMessage(new MessagesSendParams
+                {
+                    RandomId = new DateTime().Millisecond,
+                    PeerId = context.Chat.PeerId,
+                    Keyboard = k,
+                    Message = "just test"
+                });
+            }
         }
 
         [CallbackReceive("message_new")]
