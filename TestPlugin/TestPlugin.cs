@@ -31,6 +31,11 @@ namespace TestPlugin
             childKeyboard.Add(new KeyboardTextButton("Test1", (c, u) => c.SendMessage("test1!")) { Color = ButtonColor.Red });
             childKeyboard.Add(new KeyboardTextButton("Test2", (c, u) => c.SendMessage("test2!")) { Color = ButtonColor.Red });
             chat.AddKeyboard(childKeyboard);
+            
+            //обработчик стандартной кнопки Старт
+            var startButton = new Keyboard("Start") { Id = "start" };
+            childKeyboard.Add(new KeyboardTextButton("Старт", (c, u) => c.SendMessage("start")));
+            chat.AddKeyboard(childKeyboard);
         }
 
         [Command(IsHidden = true)]

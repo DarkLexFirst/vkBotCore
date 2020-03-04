@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using vkBotCore.UI;
 using VkNet.Model;
@@ -43,7 +42,7 @@ namespace vkBotCore
                 {
                     var payload = JsonConvert.DeserializeObject<TextButtonPayload>(messageData.Payload);
                     var s = payload.Button.Split(':');
-                    OnButtonClick(chat, user, message, s[0], s[1], messageData);
+                    OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
                     return;
                 }
                 catch (Exception e)
