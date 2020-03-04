@@ -7,6 +7,7 @@ using VkNet.Abstractions;
 using VkNet.Model;
 using VkNet.Utils;
 using vkBotCore;
+using System.Threading;
 
 namespace vkBotCore.Controllers
 {
@@ -44,25 +45,37 @@ namespace vkBotCore.Controllers
                 if (updates.SecretKey != _secretKey)
                     return BadRequest("Secret key is incorrect!");
 
-                Core.PluginManager.PluginCallbackHandler(ref updates, updates.GroupId);
-                if (updates == null) return Ok("ok");
+                if(updates.Type == "confirmation")
+                    return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
 
-                switch (updates.Type)
+                new Thread(() =>
                 {
-                    case "confirmation":
-                        return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
-                    case "message_new":
+                    try
+                    {
+                        Core.PluginManager.PluginCallbackHandler(ref updates, updates.GroupId);
+                        if (updates == null) return;
+
+                        switch (updates.Type)
                         {
-                            var vkApi = Core.VkApi.Get(updates.GroupId);
-                            var msg = Message.FromJson(new VkResponse(updates.Object));
+                            case "message_new":
+                                {
+                                    var vkApi = Core.VkApi.Get(updates.GroupId);
+                                    var msg = Message.FromJson(new VkResponse(updates.Object));
 
-                            User user = null;
-                            try { user = new User(vkApi, msg.FromId.Value); } catch { return Ok("ok"); }
+                                    User user = null;
+                                    try { user = new User(vkApi, msg.FromId.Value); } catch { return; }
 
-                            vkApi.MessageHandler.OnMessage(user, msg.Text, msg.PeerId.Value, msg, updates.GroupId);
-                            break;
+                                    vkApi.MessageHandler.OnMessage(user, msg.Text, msg.PeerId.Value, msg);
+                                    break;
+                                }
                         }
-                }
+                    }
+                    catch (Exception e)
+                    {
+                        Core.Log.Error(e.ToString());
+                    }
+                })
+                { IsBackground = true }.Start();
             }
             catch (Exception e)
             {

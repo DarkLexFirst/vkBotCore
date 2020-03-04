@@ -344,14 +344,14 @@ namespace vkBotCore.Plugins
             }
         }
 
-        public object HandleCommand(User user, Chat chat, string cmdline, Message messageData, long groupId)
+        public object HandleCommand(User user, Chat chat, string cmdline, Message messageData)
         {
             var split = Regex.Split(cmdline, "(?<=^[^\"]*(?:\"[^\"]*\"[^\"]*)*) (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
             string commandName = split[0].Trim('/').Trim('.').ToLower();
             string[] arguments = split.Skip(1).ToArray();
 
             Command command = null;
-            command = GetCommand(commandName, groupId);
+            command = GetCommand(commandName, chat.VkApi.GroupId);
 
             //if (arguments.Length > 0 && command == null)
             //{
@@ -376,7 +376,7 @@ namespace vkBotCore.Plugins
                 {
                     MethodInfo method = overload.Method;
 
-                    if (!IsAvailable(method, groupId))
+                    if (!IsAvailable(method, chat.VkApi.GroupId))
                         continue;
 
                     if (ExecuteCommand(method, user, chat, arguments, messageData, out object retVal))
@@ -406,6 +406,11 @@ namespace vkBotCore.Plugins
             return _namespace == GetNamespaceParrant(GetType()) || Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[] { _namespace }).Contains(_namespace);
         }
 
+        public VkCoreApiBase[] GetAvailableApis(Type type)
+        {
+            return Core.VkApi.GetAvailableApis(GetNamespaceParrant(type));
+        }
+
         private string GetNamespaceParrant(Type type)
         {
             return type.Namespace.Split('.').First();
@@ -413,17 +418,23 @@ namespace vkBotCore.Plugins
 
         private Command GetCommand(string commandName, long groupId)
         {
-            Command command;
-            if (Commands.ContainsKey(commandName))
+            Command command = null;
+            try
             {
-                command = Commands[commandName];
+                if (Commands.ContainsKey(commandName))
+                {
+                    command = Commands[commandName];
+                }
+                else
+                {
+                    command = Commands.Values.FirstOrDefault(cmd => cmd.Overloads.Values.Any(overload => overload.Aliases?.Any(s => s == commandName) ?? false));
+                }
+                if (command == null)
+                    return null;
+                if (!command.Overloads.Values.Any(o => IsAvailable(o.Method, groupId)))
+                    return null;
             }
-            else
-            {
-                command = Commands.Values.FirstOrDefault(cmd => cmd.Overloads.Values.Any(overload => overload.Aliases != null && overload.Aliases.Any(s => s == commandName)));
-            }
-            if (!command.Overloads.Values.Any(o => IsAvailable(o.Method, groupId)))
-                return null;
+            catch (Exception e) { Console.WriteLine(e); }
             return command;
         }
 

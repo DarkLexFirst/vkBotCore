@@ -2,6 +2,7 @@
 using vkBotCore;
 using vkBotCore.Plugins;
 using vkBotCore.Plugins.Attributes;
+using vkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.Keyboard;
 using VkNet.Model.RequestParams;
@@ -12,11 +13,24 @@ namespace TestPlugin
 {
     public class TestPlugin : Plugin
     {
-        [Command]
-        private static void Everyone(CommandContext context, params string[] message)
+        protected override void OnEnable()
         {
-            if (context.Sender.IsAdmin || context.Sender.IsChatAdmin(context.Chat))
-                context.Chat.SendMessage($"{context.Chat.GetEveryoneMentionLine("͟")}{string.Join(" ", message)}");
+            //при инициализации беседы происходит подгрузка всех панелей
+            foreach (var api in AvailableApis)
+                api.ChatCreated += (s, e) => LoadKeyboards(e.Chat);
+        }
+
+        public void LoadKeyboards(Chat chat)
+        {
+            //панель с наивысшим приоритетом, коорая обновляется при каждой отправке сообщения ботом
+            var keyboard = chat.BaseKeyboard = new Keyboard(null) { Id = "main_keyboard" };
+            keyboard.Add(new KeyboardTextButton("Menu", (c, user) => c.SendKeyboard("menu")));
+
+            //вспомогательное меню с привязкой по Id
+            var childKeyboard = new Keyboard("Menu opened") { Id = "menu", InMessage = true };
+            childKeyboard.Add(new KeyboardTextButton("Test1", (c, u) => c.SendMessage("test1!")) { Color = ButtonColor.Red });
+            childKeyboard.Add(new KeyboardTextButton("Test2", (c, u) => c.SendMessage("test2!")) { Color = ButtonColor.Red });
+            chat.AddKeyboard(childKeyboard);
         }
 
         [Command(IsHidden = true)]
@@ -61,25 +75,6 @@ namespace TestPlugin
                 context.Chat.SendMessage($"{cmd}");
         }
 
-        [Command(IsHidden = true)]
-        private static void Test3Command(CommandContext context)
-        {
-            if (context.Sender.IsAdmin)
-            {
-                var k = new MessageKeyboard();
-                k.OneTime = true;
-                //k.Inline = true;
-                k.Buttons = new MessageKeyboardButton[][] { new MessageKeyboardButton[] { new MessageKeyboardButton() { Color = KeyboardButtonColor.Negative, Action = new MessageKeyboardButtonAction() { Type = KeyboardButtonActionType.Text, Label = "click me", Payload = "{\"button\": \"click\"}" } } } };
-                context.Chat.VkApi.MessageHandler.SendMessage(new MessagesSendParams
-                {
-                    RandomId = new DateTime().Millisecond,
-                    PeerId = context.Chat.PeerId,
-                    Keyboard = k,
-                    Message = "just test"
-                });
-            }
-        }
-
         [CallbackReceive("message_new")]
         public Updates CallbackMessageHandler(Updates updates, VkCoreApiBase vkApi)
         {
@@ -95,6 +90,41 @@ namespace TestPlugin
             var user = new User(vkApi, msg["from_id"]);
             vkApi.Core.Log.Debug($"amount: {msg["amount"] / 1000}, from: {user.FirstName} {user.LastName}, description: {msg["description"]}");
             return updates;
+        }
+
+        [Command(IsHidden = true)]
+        private static void UITest1(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                var k = new Keyboard("test") { OneTime = true };
+                k.Add(new KeyboardTextButton("test button 1", (c, u) => c.SendMessage("Used by " + u.GetMentionLine())) { Color = ButtonColor.Red });
+                k.AddOnNewLine(new KeyboardTextButton("test button 2", (c, u) => c.SendMessage("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
+                k.Add(new KeyboardTextButton("test button 3", (c, u) => c.SendMessage("Used by " + u.GetMentionLine())) { Color = ButtonColor.Blue });
+                context.Chat.SendKeyboard(k);
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void UITest2(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                var k = new Keyboard("test");
+                k.Add(new KeyboardTextButton("test button 1", (c, u) => c.SendMessage("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
+                context.Chat.SendKeyboard(k);
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void UITest3(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                var k = new Keyboard("test") { InMessage = true };
+                k.Add(new KeyboardTextButton("test button 1", "test_named_button") { Color = ButtonColor.Red });
+                context.Chat.SendKeyboard(k);
+            }
         }
     }
 }

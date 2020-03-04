@@ -45,6 +45,8 @@ namespace vkBotCore
             return chat.GetAllChatAdministrators().Contains(Id);
         }
 
+        public Chat GetConversation() => VkApi.GetChat(Id);
+
         public string GetMentionLine()
         {
             return GetMentionLine(Id, FirstName);
@@ -54,6 +56,7 @@ namespace vkBotCore
         {
             return $"[id{id}|{value}]";
         }
+
         public VkNet.Model.User GetApiUser()
         {
             return GetApiUserById(VkApi, Id);

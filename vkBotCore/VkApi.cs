@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using vkBotCore.Configuration;
 using VkNet;
-using VkNet.Abstractions;
 using VkNet.Model;
 
 namespace vkBotCore
@@ -20,6 +20,14 @@ namespace vkBotCore
             var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
             if (accesToken != null)
                 Authorize(new ApiAuthParams { AccessToken = accesToken });
+
+            LoadAll();
+        }
+
+        public void LoadAll()
+        {
+            foreach (var a in Core.Configuration.GetSection("Config:Groups").GetChildren())
+                Get(long.Parse(a.Key));
         }
 
         public VkCoreApiBase Get(long groupId)
@@ -34,6 +42,18 @@ namespace vkBotCore
             _vkApi.Add(groupId, api);
             return api;
         }
+
+        public VkCoreApiBase[] GetAvailableApis(string _namespace)
+        {
+            var apis = _vkApi.Values.Where(a => a.AvailableNamespaces.Contains(_namespace));
+            if(AvailableNamespaces.Contains(_namespace))
+            {
+                var _apis = apis.ToList();
+                _apis.Add(this);
+                return _apis.ToArray();
+            }
+            return apis.ToArray();
+        }
     }
 
     public class VkCoreApiBase : VkApi
@@ -44,6 +64,7 @@ namespace vkBotCore
 
         private Dictionary<long, Chat> Chats { get; set; }
         public MessageHandler MessageHandler { get; private set; }
+        public string[] AvailableNamespaces { get; private set; }
 
         public VkCoreApiBase(BotCore core, long groupId)
         {
@@ -51,13 +72,30 @@ namespace vkBotCore
             GroupId = groupId;
             Chats = new Dictionary<long, Chat>();
             MessageHandler = new MessageHandler(this);
+            AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
         }
 
         public Chat GetChat(long peerId)
         {
             if (!Chats.ContainsKey(peerId))
-                Chats.Add(peerId, new Chat(this, peerId));
-            return Chats[peerId];
+            {
+                Chat chat = new Chat(this, peerId);
+                Chats.Add(peerId, chat);
+
+                Core.VkApi.OnChatCreated(new ChatEventArgs(chat));
+                if (Core.VkApi != this)
+                    OnChatCreated(new ChatEventArgs(chat));
+                return chat;
+            }
+            else
+                return Chats[peerId];
+        }
+
+        public event EventHandler<ChatEventArgs> ChatCreated;
+
+        protected virtual void OnChatCreated(ChatEventArgs e)
+        {
+            ChatCreated?.Invoke(this, e);
         }
     }
 }

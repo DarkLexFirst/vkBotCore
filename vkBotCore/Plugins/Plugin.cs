@@ -8,9 +8,12 @@ namespace vkBotCore.Plugins
 
 		[ThreadStatic] public static CommandContext CurrentContext = null;
 
+        public VkCoreApiBase[] AvailableApis { get; private set; }
+
 		public void OnEnable(PluginManager pluginManager)
 		{
             PluginManager = pluginManager;
+            AvailableApis = pluginManager.GetAvailableApis(GetType());
 			OnEnable();
 		}
 
