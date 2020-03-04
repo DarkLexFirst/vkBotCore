@@ -138,14 +138,24 @@ namespace vkBotCore
             return members.Select(m => m.Id).ToArray();
         }
 
-        public string GetEveryoneMentionLine(string val)
+        public string GetEveryoneMentionLine(string val = "&#8203;")
         {
-            return string.Join("", GetAllChatMembers().Select(m => User.GetMentionLine(m, val)));
+            return GetMentionLine(GetAllChatMembers(), val);
         }
 
-        public IEnumerable<string> GetEveryoneMentions(string val)
+        public IEnumerable<string> GetEveryoneMentions(string val = "&#8203;")
         {
-            return GetAllChatMembers().Select(m => User.GetMentionLine(m, val));
+            return GetMentions(GetAllChatMembers(), val);
+        }
+
+        public static string GetMentionLine(IEnumerable<long> users, string val = "&#8203;")
+        {
+            return string.Join("", GetMentions(users, val));
+        }
+
+        public static IEnumerable<string> GetMentions(IEnumerable<long> users, string val = "&#8203;")
+        {
+            return users.Select(m => User.GetMentionLine(m, val));
         }
 
         public override bool Equals(object obj) => obj is Chat user && Equals(user);

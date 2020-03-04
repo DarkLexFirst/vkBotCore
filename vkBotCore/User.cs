@@ -54,7 +54,7 @@ namespace vkBotCore
 
         public static string GetMentionLine(long id, string value)
         {
-            return $"[id{id}|{value}]";
+            return id >= 0 ? $"[id{id}|{value ?? id.ToString()}]" : string.Empty;
         }
 
         public VkNet.Model.User GetApiUser()

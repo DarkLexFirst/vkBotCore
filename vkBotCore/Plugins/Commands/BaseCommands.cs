@@ -117,7 +117,7 @@ namespace vkBotCore.Plugins.Commands
             bool baseCommandsAllowed = context.Core.Configuration.GetValue("Config:Plugins:BaseCommandsAllowed", false);
             if (context.Sender.IsAdmin || (baseCommandsAllowed && context.Sender.IsChatAdmin(context.Chat)))
             {
-                var mentions = context.Chat.GetEveryoneMentions("&#8203;");
+                var mentions = context.Chat.GetEveryoneMentions();
                 int k = 100;
                 for (var i = 0; i < mentions.Count(); i += k)
                     context.Chat.SendMessage($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
