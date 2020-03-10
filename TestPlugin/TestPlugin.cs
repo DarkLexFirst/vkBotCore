@@ -128,6 +128,7 @@ namespace TestPlugin
             {
                 var k = new Keyboard("test") { InMessage = true };
                 k.Add(new KeyboardTextButton("test button 1", "test_named_button") { Color = ButtonColor.Red });
+                k.Add(new KeyboardLinkButton("Click me", "https://github.com/DarkLexFirst/vkBotCore"));
                 context.Chat.SendKeyboard(k);
             }
         }
