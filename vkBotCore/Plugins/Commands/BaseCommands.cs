@@ -3,10 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using vkBotCore.Plugins.Attributes;
-using vkBotCore.UI;
 
 namespace vkBotCore.Plugins.Commands
 {
@@ -122,13 +119,6 @@ namespace vkBotCore.Plugins.Commands
                 for (var i = 0; i < mentions.Count(); i += k)
                     context.Chat.SendMessage($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
             }
-        }
-
-        [Command(IsHidden = true)]
-        private static void GetChatId(CommandContext context)
-        {
-            if (context.Sender.IsAdmin)
-                context.Chat.SendMessage("Current chat id: " + context.Chat.PeerId);
         }
     }
 }

@@ -3,9 +3,7 @@ using vkBotCore;
 using vkBotCore.Plugins;
 using vkBotCore.Plugins.Attributes;
 using vkBotCore.UI;
-using VkNet.Enums.SafetyEnums;
-using VkNet.Model.Keyboard;
-using VkNet.Model.RequestParams;
+using vkBotCore.VKPay;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
 
@@ -129,6 +127,26 @@ namespace TestPlugin
                 var k = new Keyboard("test") { InMessage = true };
                 k.Add(new KeyboardTextButton("test button 1", "test_named_button") { Color = ButtonColor.Red });
                 k.Add(new KeyboardLinkButton("Click me", "https://github.com/DarkLexFirst/vkBotCore"));
+                context.Chat.SendKeyboard(k);
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void VkPayTest(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                var k = new Keyboard("vk pay ptg test") { InMessage = true };
+                k.Add(new KeyboardVkPayButton(new VkPay(VkPayAction.Pay, VkPayTarget.Group, context.Chat.VkApi.GroupId, 10)));
+                context.Chat.SendKeyboard(k);
+                k = new Keyboard("vk pay gt test") { InMessage = true };
+                k.Add(new KeyboardVkPayButton(new VkPay(VkPayAction.Transfer, VkPayTarget.Group, context.Chat.VkApi.GroupId)));
+                context.Chat.SendKeyboard(k);
+                k = new Keyboard("vk pay ptu test") { InMessage = true };
+                k.Add(new KeyboardVkPayButton(new VkPay(VkPayAction.Pay, VkPayTarget.User, context.Sender.Id, 10)));
+                context.Chat.SendKeyboard(k);
+                k = new Keyboard("vk pay ut test") { InMessage = true };
+                k.Add(new KeyboardVkPayButton(new VkPay(VkPayAction.Transfer, VkPayTarget.User, context.Sender.Id)));
                 context.Chat.SendKeyboard(k);
             }
         }

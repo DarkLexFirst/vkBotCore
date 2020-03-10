@@ -9,23 +9,18 @@
   <ItemGroup>
     <Compile Remove="Plugins\Commandsccc\**" />
     <Compile Remove="purchases\**" />
-    <Compile Remove="VkPay\**" />
     <Content Remove="Plugins\Commandsccc\**" />
     <Content Remove="purchases\**" />
-    <Content Remove="VkPay\**" />
     <EmbeddedResource Remove="Plugins\Commandsccc\**" />
     <EmbeddedResource Remove="purchases\**" />
-    <EmbeddedResource Remove="VkPay\**" />
     <None Remove="Plugins\Commandsccc\**" />
     <None Remove="purchases\**" />
-    <None Remove="VkPay\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Controllers\ValuesController.cs" />
     <Compile Remove="Plugins\IStartup.cs" />
     <Compile Remove="Purchase.cs" />
-    <Compile Remove="UI\KeyboardVkPayButton.cs" />
   </ItemGroup>
 
   <ItemGroup>
