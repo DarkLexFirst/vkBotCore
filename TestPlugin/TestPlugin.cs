@@ -150,5 +150,44 @@ namespace TestPlugin
                 context.Chat.SendKeyboard(k);
             }
         }
+
+        [Command(IsHidden = true)]
+        private static void StorageSet(CommandContext context, string dataTag, string data, bool forced = false)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                if (forced)
+                    context.Sender.Storage.ForcedSet(dataTag, data);
+                else
+                    context.Sender.Storage[dataTag] = data;
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void StorageGet(CommandContext context, string dataTag)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                context.Chat.SendMessage(context.Sender.Storage[dataTag]);
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void StorageRemove(CommandContext context, string dataTag)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                context.Sender.Storage[dataTag] = null;
+            }
+        }
+
+        [Command(IsHidden = true)]
+        private static void GetAllStorageKeys(CommandContext context)
+        {
+            if (context.Sender.IsAdmin)
+            {
+                context.Chat.SendMessage(string.Join(", ", context.Sender.Storage.Keys));
+            }
+        }
     }
 }

@@ -66,12 +66,15 @@ namespace vkBotCore
         public MessageHandler MessageHandler { get; private set; }
         public string[] AvailableNamespaces { get; private set; }
 
+        internal Storages StoragesCache { get; set; }
+
         public VkCoreApiBase(BotCore core, long groupId)
         {
             Core = core;
             GroupId = groupId;
             Chats = new Dictionary<long, Chat>();
             MessageHandler = new MessageHandler(this);
+            StoragesCache = new Storages();
             AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
         }
 

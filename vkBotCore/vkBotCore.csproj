@@ -3,7 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Aleksey Lashov</Authors>
+    <Company />
+    <PackageId>VkBotCore</PackageId>
+    <Product>VkBotCore</Product>
+    <AssemblyVersion>1.0.15.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

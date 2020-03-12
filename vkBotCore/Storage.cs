@@ -1,14 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace vkBotCore
 {
+    public class Storages : List<Storage>
+    {
+        private static Timer _saveTimer;
+
+        public Storages()
+        {
+            _saveTimer = new Timer(1000);
+            _saveTimer.AutoReset = true;
+            int i = 0;
+            _saveTimer.Elapsed += (s, e) =>
+            {
+                if (++i == 300)
+                {
+                    foreach (var storage in ToArray())
+                    {
+                        storage.Save();
+                        if ((DateTime.Now - storage._lastUpdate).TotalMinutes > 60)
+                            Remove(storage);
+                    }
+                    i = 0;
+                }
+            };
+            _saveTimer.Start();
+        }
+    }
+
     public class Storage : IEquatable<Storage>
     {
-        private static List<Storage> cache { get; set; } = new List<Storage>();
+        private Storages cache { get; set; }
 
         public User User { get; set; }
 
@@ -18,30 +43,7 @@ namespace vkBotCore
 
         public string[] Keys { get => (_keys == null ? _keys = GetKeys() : _keys).ToArray(); }
 
-        private static Timer _saveTimer;
-        private DateTime _lastUpdate = DateTime.Now;
-
-        static Storage()
-        {
-            _saveTimer = new Timer(1000);
-            _saveTimer.AutoReset = true;
-            int i = 0;
-            _saveTimer.Elapsed += (s, e) =>
-            {
-                if (++i == 300)
-                {
-                    foreach (var storage in cache.ToArray())
-                    {
-                        storage.Save();
-                        if ((DateTime.Now - storage._lastUpdate).TotalMinutes > 60)
-                            cache.Remove(storage);
-                    }
-                    i = 0;
-                }
-            };
-            _saveTimer.Start();
-        }
-
+        internal DateTime _lastUpdate = DateTime.Now;
         private bool _initialized = false;
 
         public Storage(User user)
@@ -49,6 +51,8 @@ namespace vkBotCore
             User = user;
             _storage = new Dictionary<string, string>();
             _changes = new List<string>();
+
+            cache = user.VkApi.StoragesCache;
         }
 
         public string this[string key] {
@@ -109,6 +113,9 @@ namespace vkBotCore
             lock (_storage)
             {
                 _lastUpdate = DateTime.Now;
+                value = string.IsNullOrEmpty(value) ? null : value;
+                if (_keys == null) _keys = GetKeys();
+
                 if (_storage.ContainsKey(key))
                 {
                     if (_storage[key] == value) return;
@@ -117,14 +124,13 @@ namespace vkBotCore
                 else
                 {
                     _storage.Add(key, value);
-                    if (_keys != null)
-                    {
-                        if (value == null)
-                            _keys.Remove(key);
-                        else
-                            _keys.Add(key);
-                    }
                 }
+
+                if (value == null)
+                    _keys.Remove(key);
+                else if(!_keys.Contains(key))
+                    _keys.Add(key);
+
                 if (forced)
                     Set(key, value);
                 else if (!_changes.Contains(key))
