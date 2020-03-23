@@ -17,6 +17,8 @@ namespace vkBotCore.UI
         public bool OneTime { get; set; } = false;
         public bool InMessage { get; set; } = false;
 
+        public bool IsEmpty { get => _buttons.All(l => l.Count == 0); }
+
         public Keyboard(string message)
         {
             Id = _lastKeyboardId++.ToString();

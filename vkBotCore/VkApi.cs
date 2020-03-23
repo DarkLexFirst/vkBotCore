@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using vkBotCore.Configuration;
 using VkNet;
 using VkNet.Model;
@@ -78,11 +77,13 @@ namespace vkBotCore
             AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
         }
 
+        public Func<VkCoreApiBase, long, Chat> GetNewChat { get; set; }
+
         public Chat GetChat(long peerId)
         {
             if (!Chats.ContainsKey(peerId))
             {
-                Chat chat = new Chat(this, peerId);
+                Chat chat = GetNewChat?.Invoke(this, peerId) ?? new Chat(this, peerId);
                 Chats.Add(peerId, chat);
 
                 Core.VkApi.OnChatCreated(new ChatEventArgs(chat));

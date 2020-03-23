@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using vkBotCore.Plugins.Attributes;
+using VkNet.Model.Attachments;
+using VkNet.Model.RequestParams.Polls;
 
 namespace vkBotCore.Plugins.Commands
 {

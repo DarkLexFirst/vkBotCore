@@ -145,16 +145,16 @@ namespace vkBotCore
 
         public Chat Chat { get; set; }
 
-        public User User { get; set; }
+        public User Sender { get; set; }
 
         public string Message { get; set; }
 
         public Message MessageData {get;set;}
 
-        public GetMessageEventArgs(Chat chat, User user, string message, Message messageData)
+        public GetMessageEventArgs(Chat chat, User sender, string message, Message messageData)
         {
             Chat = chat;
-            User = user;
+            Sender = sender;
             Message = message;
             MessageData = messageData;
         }
@@ -167,7 +167,7 @@ namespace vkBotCore
 
         public string ButtonId { get; set; }
 
-        public ButtonClickEventArgs(Chat chat, User user, string message, string keyboardId, string buttonId, Message messageData) : base(chat, user, message, messageData)
+        public ButtonClickEventArgs(Chat chat, User sender, string message, string keyboardId, string buttonId, Message messageData) : base(chat, sender, message, messageData)
         {
             KeyboardId = keyboardId;
             ButtonId = buttonId;

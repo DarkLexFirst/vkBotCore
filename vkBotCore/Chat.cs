@@ -128,14 +128,28 @@ namespace vkBotCore
 
         public long[] GetAllChatAdministrators()
         {
-            var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
-            return members.Where(m => m.IsAdmin).Select(m => m.MemberId).ToArray();
+            try
+            {
+                var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
+                return members.Where(m => m.IsAdmin).Select(m => m.MemberId).ToArray();
+            }
+            catch
+            {
+                return new long[0];
+            }
         }
 
         public long[] GetAllChatMembers()
         {
-            var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Profiles;
-            return members.Select(m => m.Id).ToArray();
+            try
+            {
+                var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Profiles;
+                return members.Select(m => m.Id).ToArray();
+            }
+            catch
+            {
+                return new long[0];
+            }
         }
 
         public string GetEveryoneMentionLine(string val = "&#8203;")
@@ -156,6 +170,11 @@ namespace vkBotCore
         public static IEnumerable<string> GetMentions(IEnumerable<long> users, string val = "&#8203;")
         {
             return users.Select(m => User.GetMentionLine(m, val));
+        }
+
+        public static IEnumerable<string> GetMentions(IEnumerable<User> users)
+        {
+            return users.Select(u => u.GetMentionLine());
         }
 
         public override bool Equals(object obj) => obj is Chat user && Equals(user);

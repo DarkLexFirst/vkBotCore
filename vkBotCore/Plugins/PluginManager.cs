@@ -360,7 +360,7 @@ namespace vkBotCore.Plugins
             //	command = GetCommand(commandName);
             //}
 
-            bool showErrorLine = Core.Configuration.GetValue("Plugins:Commands:ShowErrorLine", true);
+            bool showErrorLine = Core.Configuration.GetValue("Config:Plugins:Commands:ShowErrorLine", true);
 
             if (command == null)
             {
