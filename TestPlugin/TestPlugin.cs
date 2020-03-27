@@ -13,14 +13,14 @@ namespace TestPlugin
     {
         protected override void OnEnable()
         {
-            //при инициализации беседы происходит подгрузка всех панелей
+            //при инициализации беседы происходит подгрузка всех клавиатур
             foreach (var api in AvailableApis)
                 api.ChatCreated += (s, e) => LoadKeyboards(e.Chat);
         }
 
         public void LoadKeyboards(Chat chat)
         {
-            //панель с наивысшим приоритетом, коорая обновляется при каждой отправке сообщения ботом
+            //клавиатура с наивысшим приоритетом, коорая обновляется при каждой отправке сообщения ботом
             var keyboard = chat.BaseKeyboard = new Keyboard(null) { Id = "main_keyboard" };
             keyboard.Add(new KeyboardTextButton("Menu", (c, user) => c.SendKeyboard("menu")));
 
