@@ -6,10 +6,10 @@ using System.Linq;
 using VkNet.Abstractions;
 using VkNet.Model;
 using VkNet.Utils;
-using vkBotCore;
+using VkBotCore;
 using System.Threading;
 
-namespace vkBotCore.Controllers
+namespace VkBotCore.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

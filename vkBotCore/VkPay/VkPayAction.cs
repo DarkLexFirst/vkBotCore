@@ -1,4 +1,4 @@
-﻿namespace vkBotCore.VKPay
+﻿namespace VkBotCore.VKPay
 {
     public enum VkPayAction
     {

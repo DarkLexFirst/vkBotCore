@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VkNet.Model;
 
-namespace vkBotCore.Plugins
+namespace VkBotCore.Plugins
 {
     public class CommandContext
     {

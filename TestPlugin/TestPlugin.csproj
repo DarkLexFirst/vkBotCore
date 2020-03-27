@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\vkBotCore\vkBotCore.csproj" />
+    <ProjectReference Include="..\vkBotCore\VkBotCore.csproj" />
   </ItemGroup>
 
 </Project>

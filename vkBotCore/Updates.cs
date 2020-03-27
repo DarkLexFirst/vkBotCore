@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace vkBotCore
+namespace VkBotCore
 {
     [Serializable]
     public class Updates

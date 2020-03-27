@@ -3,22 +3,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using vkBotCore.Configuration;
+using VkBotCore.Configuration;
 using VkNet.Model;
 
-namespace vkBotCore
+namespace VkBotCore
 {
     public class User : IEquatable<User>
     {
+        /// <summary>
+        /// VkApi обработчик управляющего сообщества.
+        /// </summary>
         public VkCoreApiBase VkApi { get; set; }
 
+        /// <summary>
+        /// Идентификатор пользователя.
+        /// </summary>
         public long Id { get; set; }
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
+        /// <summary>
+        /// Определяет, есть ли у пользователя права администратора приложения.
+        /// </summary>
         public bool IsAdmin { get => VkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id); }
 
+        /// <summary>
+        /// Хранилище.
+        /// </summary>
         public Storage Storage { get; set; }
 
         public User(VkCoreApiBase vkApi, long id)
@@ -40,18 +52,30 @@ namespace vkBotCore
             Id = id;
         }
 
+        /// <summary>
+        /// Опредеяет, является ли пользователь администратором диалога.
+        /// </summary>
         public bool IsChatAdmin(Chat chat)
         {
             return chat.GetAllChatAdministrators().Contains(Id);
         }
 
+        /// <summary>
+        /// Возвращает личную переписку сообщества с данным пользователем.
+        /// </summary>
         public Chat GetConversation() => VkApi.GetChat(Id);
 
+        /// <summary>
+        /// Возвращает строку упоминания.
+        /// </summary>
         public string GetMentionLine()
         {
             return GetMentionLine(Id, FirstName);
         }
 
+        /// <summary>
+        /// Возвращает строку упоминания.
+        /// </summary>
         public static string GetMentionLine(long id, string value)
         {
             return id >= 0 ? $"[id{id}|{value ?? id.ToString()}]" : string.Empty;

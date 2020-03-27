@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace vkBotCore.UI
+namespace VkBotCore.UI
 {
     [Serializable]
-    public class TextButtonPayload
+    public class KeyboardButtonPayload
     {
         [JsonProperty("button")]
         public string Button { get; set; }

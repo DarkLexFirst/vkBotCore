@@ -7,17 +7,17 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using vkBotCore.Plugins.Attributes;
+using VkBotCore.Plugins.Attributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using VkNet.Model;
-using vkBotCore.Plugins.Commands;
-using vkBotCore.Controllers;
+using VkBotCore.Plugins.Commands;
+using VkBotCore.Controllers;
 using Microsoft.Extensions.Configuration;
-using vkBotCore.Configuration;
+using VkBotCore.Configuration;
 
-namespace vkBotCore.Plugins
+namespace VkBotCore.Plugins
 {
     public class PluginManager
     {

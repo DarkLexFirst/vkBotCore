@@ -1,9 +1,9 @@
 ﻿using System;
-using vkBotCore;
-using vkBotCore.Plugins;
-using vkBotCore.Plugins.Attributes;
-using vkBotCore.UI;
-using vkBotCore.VKPay;
+using VkBotCore;
+using VkBotCore.Plugins;
+using VkBotCore.Plugins.Attributes;
+using VkBotCore.UI;
+using VkBotCore.VKPay;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
 

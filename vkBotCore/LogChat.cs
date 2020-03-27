@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using vkBotCore;
+using VkBotCore;
 
-namespace vkBotCore
+namespace VkBotCore
 {
     public class LogChat : Chat
     {

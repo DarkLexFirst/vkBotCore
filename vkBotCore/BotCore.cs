@@ -10,10 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using vkBotCore.Plugins;
-using vkBotCore.Plugins.Attributes;
+using VkBotCore.Plugins;
+using VkBotCore.Plugins.Attributes;
 
-namespace vkBotCore
+namespace VkBotCore
 {
     public class BotCore
     {

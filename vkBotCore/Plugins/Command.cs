@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace vkBotCore.Plugins
+namespace VkBotCore.Plugins
 {
 	public class CommandSet : Dictionary<string, Command>
 	{

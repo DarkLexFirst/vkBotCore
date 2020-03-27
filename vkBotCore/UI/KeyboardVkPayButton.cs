@@ -1,13 +1,16 @@
 ﻿using VkNet.Enums.SafetyEnums;
 using VkNet.Model.Keyboard;
-using vkBotCore.VKPay;
+using VkBotCore.VKPay;
 
-namespace vkBotCore.UI
+namespace VkBotCore.UI
 {
-    public class KeyboardVkPayButton : BaseKeyboardButton
+    public class KeyboardVkPayButton : IKeyboardButton
     {
         public string Id { get; set; }
 
+        /// <summary>
+        /// VkPay.
+        /// </summary>
         public VkPay VkPay { get; set; }
 
         public KeyboardVkPayButton(VkPay vkPay)

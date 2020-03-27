@@ -5,17 +5,25 @@ using System.Threading.Tasks;
 using VkNet.Model.Keyboard;
 using VkNet.Enums.SafetyEnums;
 
-namespace vkBotCore.UI
+namespace VkBotCore.UI
 {
-    public class KeyboardTextButton : BaseKeyboardButton
+    public class KeyboardTextButton : IKeyboardButton
     {
         public string Id { get; set; }
 
+        /// <summary>
+        /// Текст кнопки.
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// Событие, вызываемое после нажатия кнопки.
+        /// </summary>
         public Action<Chat, User> Action { get; private set; }
 
-
+        /// <summary>
+        /// Цвет кнопки.
+        /// </summary>
         public ButtonColor Color { get; set; } = ButtonColor.White;
 
         public KeyboardTextButton(string label, Action<Chat, User> action)

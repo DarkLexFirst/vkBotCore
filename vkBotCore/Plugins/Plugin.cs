@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace vkBotCore.Plugins
+namespace VkBotCore.Plugins
 {
 	public abstract class Plugin : IPlugin
 	{
@@ -8,6 +8,9 @@ namespace vkBotCore.Plugins
 
 		[ThreadStatic] public static CommandContext CurrentContext = null;
 
+        /// <summary>
+        /// API сообществ, использующих пространство имён, содержащее данный плагин.
+        /// </summary>
         public VkCoreApiBase[] AvailableApis { get; private set; }
 
 		public void OnEnable(PluginManager pluginManager)

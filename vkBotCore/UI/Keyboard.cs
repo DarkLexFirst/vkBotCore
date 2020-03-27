@@ -4,19 +4,34 @@ using System.Linq;
 using System.Threading.Tasks;
 using VkNet.Model.Keyboard;
 
-namespace vkBotCore.UI
+namespace VkBotCore.UI
 {
     public class Keyboard
     {
+        /// <summary>
+        /// Сообщение, которое отправляется при отображении клавиатуры.
+        /// </summary>
         public string Message { get; set; }
 
-        private List<List<BaseKeyboardButton>> _buttons = new List<List<BaseKeyboardButton>>() { new List<BaseKeyboardButton>() };
+        private List<List<IKeyboardButton>> _buttons = new List<List<IKeyboardButton>>() { new List<IKeyboardButton>() };
 
+        /// <summary>
+        /// Идентификатор клавиатуры.
+        /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Скрывать клавиатуру после использования (не работает в сообщениях).
+        /// </summary>
         public bool OneTime { get; set; } = false;
+        /// <summary>
+        /// Отобразить клавиатуру в сообщении.
+        /// </summary>
         public bool InMessage { get; set; } = false;
 
+        /// <summary>
+        /// Определяет, наполнена ли клавиатура.
+        /// </summary>
         public bool IsEmpty { get => _buttons.All(l => l.Count == 0); }
 
         public Keyboard(string message)
@@ -25,27 +40,36 @@ namespace vkBotCore.UI
             Message = message;
         }
 
-        public void Add(BaseKeyboardButton button)
+        /// <summary>
+        /// Добавляет кнопку в последнюю строку.
+        /// </summary>
+        public void Add(IKeyboardButton button)
         {
             if (string.IsNullOrEmpty(button.Id)) button.Id = GetButtonId();
             _buttons.Last().Add(button);
         }
 
-        public void AddOnNewLine(BaseKeyboardButton button)
+        /// <summary>
+        /// Добавляет кнопку в новую строку.
+        /// </summary>
+        public void AddOnNewLine(IKeyboardButton button)
         {
             AddNewLine();
             Add(button);
         }
 
+        /// <summary>
+        /// Добавляет новую строку.
+        /// </summary>
         public void AddNewLine()
         {
             if (_buttons.Last().Count == 0) return;
-            _buttons.Add(new List<BaseKeyboardButton>());
+            _buttons.Add(new List<IKeyboardButton>());
         }
 
         internal MessageKeyboard GetKeyboard()
         {
-            if (_buttons.All(line => line.Count == 0)) throw new KeyboardEmptyException();
+            if (IsEmpty) throw new KeyboardEmptyException();
 
             MessageKeyboard keyboard = new MessageKeyboard();
             keyboard.Buttons = _buttons.Select(line => line.Select(b => b.GetButton(this)));
@@ -73,12 +97,6 @@ namespace vkBotCore.UI
         {
             return _lastButtonId++.ToString();
         }
-    }
-
-    public interface BaseKeyboardButton
-    {
-        string Id { get; set; }
-        MessageKeyboardButton GetButton(Keyboard keyboard);
     }
 
     public class KeyboardEmptyException : Exception

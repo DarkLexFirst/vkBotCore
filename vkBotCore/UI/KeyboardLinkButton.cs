@@ -5,14 +5,20 @@ using System.Threading.Tasks;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.Keyboard;
 
-namespace vkBotCore.UI
+namespace VkBotCore.UI
 {
-    public class KeyboardLinkButton : BaseKeyboardButton
+    public class KeyboardLinkButton : IKeyboardButton
     {
         public string Id { get; set; }
 
+        /// <summary>
+        /// Текст кнопки.
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// Ссылка.
+        /// </summary>
         public string Link { get; set; }
 
         public KeyboardLinkButton(string label, string link)

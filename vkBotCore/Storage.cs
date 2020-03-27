@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
 
-namespace vkBotCore
+namespace VkBotCore
 {
     public class Storages : List<Storage>
     {
@@ -35,12 +35,18 @@ namespace vkBotCore
     {
         private Storages cache { get; set; }
 
+        /// <summary>
+        /// Пользователь, к которому привязано данное хранилище.
+        /// </summary>
         public User User { get; set; }
 
         private Dictionary<string, string> _storage { get; set; }
         private List<string> _changes { get; set; }
         private List<string> _keys { get; set; }
 
+        /// <summary>
+        /// Имена всех сохранённых ячеек.
+        /// </summary>
         public string[] Keys { get => (_keys == null ? _keys = GetKeys() : _keys).ToArray(); }
 
         internal DateTime _lastUpdate = DateTime.Now;
@@ -96,6 +102,9 @@ namespace vkBotCore
             return null;
         }
 
+        /// <summary>
+        /// Принудительно обнавляет ячейку в хранилище.
+        /// </summary>
         public void ForcedSet(string key, string value)
         {
             Set(key, value, true);
@@ -153,6 +162,9 @@ namespace vkBotCore
             return User.VkApi.Storage.GetKeys((ulong)User.Id, count: 1000).ToList();
         }
 
+        /// <summary>
+        /// Сохраняет все изменения.
+        /// </summary>
         public void Save()
         {
             Initialize();

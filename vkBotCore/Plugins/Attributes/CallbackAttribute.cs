@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace vkBotCore.Plugins.Attributes
+namespace VkBotCore.Plugins.Attributes
 {
+    /// <summary>
+    /// Помечает метод как обработчика Callback событий.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
     public class CallbackReceive : Attribute
     {
+        /// <summary>
+        /// Тип события.
+        /// </summary>
         public string Type { get; } 
         public CallbackReceive(string type) => Type = type;
     }

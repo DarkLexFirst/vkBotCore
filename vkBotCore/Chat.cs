@@ -3,21 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using vkBotCore.Plugins;
-using vkBotCore.UI;
+using VkBotCore.Plugins;
+using VkBotCore.UI;
 using VkNet.Abstractions;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
 using VkNet.Model.Attachments;
 
-namespace vkBotCore
+namespace VkBotCore
 {
+	/// <summary>
+	/// Класс для взаимодействия с диалогом и пользователями в нём
+	/// </summary>
     public class Chat : IEquatable<Chat>
     {
+        /// <summary>
+        /// VkApi обработчик управляющего сообщества.
+        /// </summary>
         public VkCoreApiBase VkApi { get; set; }
+
+        /// <summary>
+        /// Идентификатор диалога
+        /// </summary>
         public long PeerId { get; set; }
 
+        /// <summary>
+        /// Определяет, является ли данный диалог личой перепиской пользователя с сообществом.
+        /// </summary>
         public bool IsUserConversation { get => PeerId < 2000000000; }
 
         private Dictionary<string, Keyboard> _cachedKeyboards { get; set; }
@@ -46,50 +59,77 @@ namespace vkBotCore
             VkApi.Messages.Pin(PeerId, (ulong)messageId);
         }
 
+        /// <summary>
+		/// Открепляет сообщение.
+		/// </summary>
         public void Unpin()
         {
             VkApi.Messages.Unpin(PeerId);
         }
 
+        /// <summary>
+		/// Исключает пользователя из диалога.
+		/// </summary>
         public bool TryKick(User user)
         {
             return TryKick(user.Id);
         }
 
+        /// <summary>
+		/// Исключает пользователя из диалога по его идентификатору.
+		/// </summary>
         public bool TryKick(long id)
         {
             try { Kick(id); } catch { return false; }
             return true;
         }
 
+        /// <summary>
+		/// Исключает пользователя из диалога по его идентификатору.
+		/// </summary>
         public void Kick(long id)
         {
             VkApi.Messages.RemoveChatUser((ulong)PeerId % 2000000000, id);
         }
 
+        /// <summary>
+		/// Отправляет текстовое сообщение в диалог.
+		/// </summary>
         public virtual void SendMessage(string message)
         {
             if (!string.IsNullOrEmpty(message))
                 VkApi.MessageHandler.SendMessage(message, PeerId, BaseKeyboard);
         }
 
+        /// <summary>
+        /// Отправляет текстовое сообщение в диалог.
+        /// </summary>
         public void SendMessage(object obj)
         {
             SendMessage(obj?.ToString());
         }
 
+        /// <summary>
+        /// Отправляет клавиатуру в диалог по её идентификатору.
+        /// </summary>
         public void SendKeyboard(string keyboardId)
         {
             if (_cachedKeyboards.ContainsKey(keyboardId))
                 SendKeyboard(_cachedKeyboards[keyboardId]);
         }
 
+        /// <summary>
+        /// Отправляет клавиатуру в диалог.
+        /// </summary>
         public void SendKeyboard(Keyboard keyboard)
         {
             AddKeyboard(keyboard);
             VkApi.MessageHandler.SendKeyboard(keyboard, PeerId);
         }
 
+        /// <summary>
+        /// Добавляет клавиатуру в кэш для дальнейшего вызова по идентификатору.
+        /// </summary>
         public void AddKeyboard(Keyboard keyboard)
         {
             if (!_cachedKeyboards.ContainsKey(keyboard.Id))
@@ -121,11 +161,17 @@ namespace vkBotCore
             return VkApi.MessageHandler.DeleteMessage(id);
         }
 
+        /// <summary>
+        /// Проверяет наличие разрешений у управляющего сообщества.
+        /// </summary>
         public bool HavePermissions()
         {
             return GetAllChatAdministrators().Contains(VkApi.GroupId);
         }
 
+        /// <summary>
+        /// Возвращает идентификаторы администраторов диалога.
+        /// </summary>
         public long[] GetAllChatAdministrators()
         {
             try
@@ -139,6 +185,9 @@ namespace vkBotCore
             }
         }
 
+        /// <summary>
+        /// Возвращает идентификаторы всех участников диалога.
+        /// </summary>
         public long[] GetAllChatMembers()
         {
             try

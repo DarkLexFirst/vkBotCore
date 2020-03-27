@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace vkBotCore.Plugins.Attributes
+namespace VkBotCore.Plugins.Attributes
 {
 	[AttributeUsage(AttributeTargets.Class, Inherited = true)]
 	public class PluginAttribute : Attribute
