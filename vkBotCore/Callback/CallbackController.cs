@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using VkNet.Abstractions;
 using VkNet.Model;
 using VkNet.Utils;
-using VkBotCore;
-using System.Threading;
 
-namespace VkBotCore.Controllers
+namespace VkBotCore.Callback
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -45,7 +42,7 @@ namespace VkBotCore.Controllers
                 if (updates.SecretKey != _secretKey)
                     return BadRequest("Secret key is incorrect!");
 
-                if(updates.Type == "confirmation")
+                if(updates.Type == CallbackReceive.Confirmation)
                     return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
 
                 new Thread(() =>
@@ -57,7 +54,7 @@ namespace VkBotCore.Controllers
 
                         switch (updates.Type)
                         {
-                            case "message_new":
+                            case CallbackReceive.Message.New:
                                 {
                                     var vkApi = Core.VkApi.Get(updates.GroupId);
                                     var msg = Message.FromJson(new VkResponse(updates.Object));

@@ -1,5 +1,6 @@
 ﻿using System;
 using VkBotCore;
+using VkBotCore.Callback;
 using VkBotCore.Plugins;
 using VkBotCore.Plugins.Attributes;
 using VkBotCore.UI;
@@ -78,7 +79,8 @@ namespace TestPlugin
                 context.Chat.SendMessage($"{cmd}");
         }
 
-        [CallbackReceive("message_new")]
+        //обработчик входящих сообщений
+        [CallbackReceive(CallbackReceive.Message.New)]
         public Updates CallbackMessageHandler(Updates updates, VkCoreApiBase vkApi)
         {
             var msg = Message.FromJson(new VkResponse(updates.Object));
@@ -86,7 +88,8 @@ namespace TestPlugin
             return updates;
         }
 
-        [CallbackReceive("vkpay_transaction")]
+        //обработчик платежей
+        [CallbackReceive(CallbackReceive.VkPay.Transaction)]
         public Updates CallbackVkPayHandler(Updates updates, VkCoreApiBase vkApi)
         {
             var msg = new VkResponse(updates.Object);

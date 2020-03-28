@@ -3,31 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Authors>Aleksey Lashov</Authors>
     <Company />
     <PackageId>VkBotCore</PackageId>
     <Product>VkBotCore</Product>
-    <AssemblyVersion>1.0.17.0</AssemblyVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Plugins\Commandsccc\**" />
-    <Compile Remove="purchases\**" />
-    <Content Remove="Plugins\Commandsccc\**" />
-    <Content Remove="purchases\**" />
-    <EmbeddedResource Remove="Plugins\Commandsccc\**" />
-    <EmbeddedResource Remove="purchases\**" />
-    <None Remove="Plugins\Commandsccc\**" />
-    <None Remove="purchases\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="Controllers\ValuesController.cs" />
-    <Compile Remove="Plugins\IStartup.cs" />
-    <Compile Remove="Purchase.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" />
@@ -35,5 +17,4 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="VkNet" Version="1.50.0" />
   </ItemGroup>
-
 </Project>

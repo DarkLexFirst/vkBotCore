@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using VkNet.Model;
 using VkBotCore.Plugins.Commands;
-using VkBotCore.Controllers;
+using VkBotCore.Callback;
 using Microsoft.Extensions.Configuration;
 using VkBotCore.Configuration;
 
