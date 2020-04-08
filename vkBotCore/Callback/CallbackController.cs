@@ -49,22 +49,25 @@ namespace VkBotCore.Callback
                 {
                     try
                     {
-                        Core.PluginManager.PluginCallbackHandler(ref updates, updates.GroupId);
+                        VkCoreApiBase vkApi = Core.VkApi.Get(updates.GroupId);
+                        Core.PluginManager.PluginCallbackHandler(ref updates, vkApi);
                         if (updates == null) return;
 
                         switch (updates.Type)
                         {
                             case CallbackReceive.Message.New:
+                            {
+                                var msg = Message.FromJson(new VkResponse(updates.Object));
+                                Chat chat = vkApi.GetChat(msg.PeerId.Value);
+                                lock (chat)
                                 {
-                                    var vkApi = Core.VkApi.Get(updates.GroupId);
-                                    var msg = Message.FromJson(new VkResponse(updates.Object));
-
                                     User user = null;
                                     try { user = new User(vkApi, msg.FromId.Value); } catch { return; }
 
-                                    vkApi.MessageHandler.OnMessage(user, msg.Text, msg.PeerId.Value, msg);
-                                    break;
+                                    vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);
                                 }
+                                break;
+                            }
                         }
                     }
                     catch (Exception e)

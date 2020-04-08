@@ -657,12 +657,11 @@ namespace VkBotCore.Plugins
             return false;
         }
 
-        internal void PluginCallbackHandler(ref Updates updates, long groupId)
+        internal void PluginCallbackHandler(ref Updates updates, VkCoreApiBase vkApi)
         {
-            var api = Core.VkApi.Get(groupId);
             foreach (var method in _callbackHandlers)
             {
-                if (!IsAvailable(method.Key, groupId))
+                if (!IsAvailable(method.Key, vkApi.GroupId))
                     continue;
 
                 if (method.Value != updates.Type) continue;
@@ -671,7 +670,7 @@ namespace VkBotCore.Plugins
                 object pluginInstance = _plugins.FirstOrDefault(plugin => _method.DeclaringType.IsInstanceOfType(plugin)) ?? _method.DeclaringType;
                 if (pluginInstance == null) continue;
 
-                updates = _method.Invoke(pluginInstance, new object[] { updates, api }) as Updates;
+                updates = _method.Invoke(pluginInstance, new object[] { updates, vkApi }) as Updates;
             }
         }
     }

@@ -21,10 +21,8 @@ namespace VkBotCore
             _lastMessages = new Dictionary<Chat, Queue<long>>();
         }
 
-        public virtual void OnMessage(User user, string message, long peerId, Message messageData)
+        public virtual void OnMessage(User user, string message, Chat chat, Message messageData)
         {
-            var chat = VkApi.GetChat(peerId);
-
             var msgId = messageData.ConversationMessageId.Value;
             if (!_lastMessages.ContainsKey(chat))
                 _lastMessages.Add(chat, new Queue<long>());
@@ -83,15 +81,16 @@ namespace VkBotCore
             chat.InvokeButton(user, keyboardId, buttonId);
         }
 
-        public void SendMessage(string message, long peerId, Keyboard keyboard = null)
+        public void SendMessage(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
         {
             SendMessage(new MessagesSendParams
             {
                 RandomId = DateTime.Now.Second * DateTime.Now.Millisecond,
                 PeerId = peerId,
                 Message = message,
-                Keyboard = keyboard?.GetKeyboard()
-            });
+                Keyboard = keyboard?.GetKeyboard(),
+                DisableMentions = disableMentions
+            }); ;
         }
 
         public bool DeleteMessage(ulong id)

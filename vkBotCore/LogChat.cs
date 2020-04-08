@@ -47,7 +47,7 @@ namespace VkBotCore
                 SendMessage(string.Format(TypeFormat, value, string.Format(message, args)));
         }
 
-        public override void SendMessage(string message)
+        public override void SendMessage(string message, bool disableMentions = false)
         {
             Console.WriteLine(message);
             if (PeerId == -1) return;

@@ -95,18 +95,18 @@ namespace VkBotCore
         /// <summary>
 		/// Отправляет текстовое сообщение в диалог.
 		/// </summary>
-        public virtual void SendMessage(string message)
+        public virtual void SendMessage(string message, bool disableMentions = false)
         {
             if (!string.IsNullOrEmpty(message))
-                VkApi.MessageHandler.SendMessage(message, PeerId, BaseKeyboard);
+                VkApi.MessageHandler.SendMessage(message, PeerId, BaseKeyboard, disableMentions);
         }
 
         /// <summary>
         /// Отправляет текстовое сообщение в диалог.
         /// </summary>
-        public void SendMessage(object obj)
+        public void SendMessage(object obj, bool disableMentions = false)
         {
-            SendMessage(obj?.ToString());
+            SendMessage(obj?.ToString(), disableMentions);
         }
 
         /// <summary>
@@ -166,7 +166,14 @@ namespace VkBotCore
         /// </summary>
         public bool HavePermissions()
         {
-            return GetAllChatAdministrators().Contains(VkApi.GroupId);
+            try
+            {
+                return GetAllChatAdministrators().Contains(-VkApi.GroupId);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>

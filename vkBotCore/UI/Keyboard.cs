@@ -71,6 +71,8 @@ namespace VkBotCore.UI
         {
             if (IsEmpty) throw new KeyboardEmptyException();
 
+            _buttons.RemoveAll(l => l.Count == 0);
+
             MessageKeyboard keyboard = new MessageKeyboard();
             keyboard.Buttons = _buttons.Select(line => line.Select(b => b.GetButton(this)));
             keyboard.Inline = InMessage;
