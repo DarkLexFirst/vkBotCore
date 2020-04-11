@@ -33,7 +33,7 @@ namespace VkBotCore
         /// </summary>
         public Storage Storage { get; set; }
 
-        public User(VkCoreApiBase vkApi, long id)
+        internal User(VkCoreApiBase vkApi, long id)
         {
             VkApi = vkApi;
             Id = id;
@@ -50,6 +50,8 @@ namespace VkBotCore
             FirstName = firstName;
             LastName = lastName;
             Id = id;
+
+            Storage = new Storage(this);
         }
 
         /// <summary>
@@ -88,8 +90,16 @@ namespace VkBotCore
 
         public static VkNet.Model.User GetApiUserById(VkCoreApiBase vkApi, long id)
         {
-            if (id < 0) return null;
+            if (id <= 0) return null;
             return vkApi.Users.Get(new long[] { id }).First();
+        }
+
+        public static async Task<VkNet.Model.User> GetApiUserByIdAsync(VkCoreApiBase vkApi, long id)
+        {
+            if (id <= 0) return null;
+            IReadOnlyCollection<VkNet.Model.User> users;
+            users = await vkApi.Users.GetAsync(new long[] { id });
+            return users.First();
         }
 
         public override bool Equals(object obj) => obj is User user && Equals(user);

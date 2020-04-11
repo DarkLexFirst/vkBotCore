@@ -366,7 +366,7 @@ namespace VkBotCore.Plugins
             {
                 //Log.Warn($"Found no command {commandName}");
                 if (showErrorLine)
-                    chat.SendMessage($"[❗] Неизвестная команда \"/{commandName}\"! Полный список команд /help");
+                    chat.SendMessageAsync($"[❗] Неизвестная команда \"/{commandName}\"! Полный список команд /help");
                 return null;
             }
 
@@ -393,7 +393,7 @@ namespace VkBotCore.Plugins
                 Core.Log.Debug("No result from execution");
             }
             if (showErrorLine)
-                chat.SendMessage("[❗] Неверный синтаксис команды! /help чтобы посмотреть полный список команд");
+                chat.SendMessageAsync("[❗] Неверный синтаксис команды! /help чтобы посмотреть полный список команд");
 
             return null;
         }
@@ -517,7 +517,7 @@ namespace VkBotCore.Plugins
                         long id;
                         string _id = args[i++].Split(' ', '|').First();
                         if (_id.Length < 4 || !long.TryParse(_id.Substring(3), out id)) return false;
-                        objectArgs[k] = new User(user.VkApi, id);
+                        objectArgs[k] = user.VkApi.GetUser(id);
                         continue;
                     }
 

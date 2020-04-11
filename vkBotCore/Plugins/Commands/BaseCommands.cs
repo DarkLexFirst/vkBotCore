@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VkBotCore.Plugins.Attributes;
-using VkNet.Model.Attachments;
-using VkNet.Model.RequestParams.Polls;
 
 namespace VkBotCore.Plugins.Commands
 {
@@ -42,7 +40,7 @@ namespace VkBotCore.Plugins.Commands
                     helpInfo += $"\n{line}";
                 }
 
-                context.Chat.SendMessage(helpInfo);
+                context.Chat.SendMessageAsync(helpInfo);
             }
             else
             {
@@ -50,14 +48,14 @@ namespace VkBotCore.Plugins.Commands
                 Command command = context.Core.PluginManager.Commands.Values.FirstOrDefault(c => c.Name == commandName || c.Overloads.Values.Any(o => o.Aliases.Contains(commandName)));
                 if(command == null)
                 {
-                    context.Chat.SendMessage($"Команда \"{commandName}\" не найдена!");
+                    context.Chat.SendMessageAsync($"Команда \"{commandName}\" не найдена!");
                     return;
                 }
 
                 string helpInfo = $"/{command.Name}\n\n";
                 helpInfo += GenerateFullCommandList(context, command);
 
-                context.Chat.SendMessage(helpInfo);
+                context.Chat.SendMessageAsync(helpInfo);
             }
         }
 
@@ -119,7 +117,7 @@ namespace VkBotCore.Plugins.Commands
                 var mentions = context.Chat.GetEveryoneMentions();
                 int k = 100;
                 for (var i = 0; i < mentions.Count(); i += k)
-                    context.Chat.SendMessage($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
+                    context.Chat.SendMessageAsync($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
             }
         }
     }

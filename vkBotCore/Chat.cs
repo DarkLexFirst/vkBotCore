@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VkBotCore.Plugins;
 using VkBotCore.UI;
-using VkNet.Abstractions;
-using VkNet.Enums.Filters;
-using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
-using VkNet.Model.Attachments;
 
 namespace VkBotCore
 {
@@ -102,11 +95,28 @@ namespace VkBotCore
         }
 
         /// <summary>
+		/// Отправляет текстовое сообщение в диалог.
+		/// </summary>
+        public virtual void SendMessageAsync(string message, bool disableMentions = false, Action continuation = null)
+        {
+            if (!string.IsNullOrEmpty(message))
+                VkApi.MessageHandler.SendMessageAsync(message, PeerId, BaseKeyboard, disableMentions, continuation);
+        }
+
+        /// <summary>
         /// Отправляет текстовое сообщение в диалог.
         /// </summary>
         public void SendMessage(object obj, bool disableMentions = false)
         {
             SendMessage(obj?.ToString(), disableMentions);
+        }
+
+        /// <summary>
+        /// Отправляет текстовое сообщение в диалог.
+        /// </summary>
+        public void SendMessageAsync(object obj, bool disableMentions = false, Action continuation = null)
+        {
+            SendMessageAsync(obj?.ToString(), disableMentions, continuation);
         }
 
         /// <summary>
@@ -119,12 +129,30 @@ namespace VkBotCore
         }
 
         /// <summary>
+        /// Отправляет клавиатуру в диалог по её идентификатору.
+        /// </summary>
+        public void SendKeyboardAsync(string keyboardId, Action continuation = null)
+        {
+            if (_cachedKeyboards.ContainsKey(keyboardId))
+                SendKeyboardAsync(_cachedKeyboards[keyboardId], continuation);
+        }
+
+        /// <summary>
         /// Отправляет клавиатуру в диалог.
         /// </summary>
         public void SendKeyboard(Keyboard keyboard)
         {
             AddKeyboard(keyboard);
             VkApi.MessageHandler.SendKeyboard(keyboard, PeerId);
+        }
+
+        /// <summary>
+        /// Отправляет клавиатуру в диалог.
+        /// </summary>
+        public void SendKeyboardAsync(Keyboard keyboard, Action continuation = null)
+        {
+            AddKeyboard(keyboard);
+            VkApi.MessageHandler.SendKeyboardAsync(keyboard, PeerId, continuation);
         }
 
         /// <summary>

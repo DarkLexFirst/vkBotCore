@@ -1,40 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Timers;
 
 namespace VkBotCore
 {
-    public class Storages : List<Storage>
-    {
-        private static Timer _saveTimer;
-
-        public Storages()
-        {
-            _saveTimer = new Timer(1000);
-            _saveTimer.AutoReset = true;
-            int i = 0;
-            _saveTimer.Elapsed += (s, e) =>
-            {
-                if (++i == 300)
-                {
-                    foreach (var storage in ToArray())
-                    {
-                        storage.Save();
-                        if ((DateTime.Now - storage._lastUpdate).TotalMinutes > 60)
-                            Remove(storage);
-                    }
-                    i = 0;
-                }
-            };
-            _saveTimer.Start();
-        }
-    }
-
     public class Storage : IEquatable<Storage>
     {
-        private Storages cache { get; set; }
-
         /// <summary>
         /// Пользователь, к которому привязано данное хранилище.
         /// </summary>
@@ -49,27 +20,17 @@ namespace VkBotCore
         /// </summary>
         public string[] Keys { get => (_keys == null ? _keys = GetKeys() : _keys).ToArray(); }
 
-        internal DateTime _lastUpdate = DateTime.Now;
-        private bool _initialized = false;
-
         public Storage(User user)
         {
             User = user;
             _storage = new Dictionary<string, string>();
             _changes = new List<string>();
-
-            cache = user.VkApi.StoragesCache;
         }
 
         public string this[string key] {
             get {
-                var storage = Initialize();
-                if (storage != null)
-                    return storage[key];
-
                 lock (_storage)
                 {
-                    _lastUpdate = DateTime.Now;
                     if (_storage.ContainsKey(key))
                         return _storage[key];
                     var value = Get(key);
@@ -79,27 +40,6 @@ namespace VkBotCore
                 }
             }
             set => Set(key, value, false);
-        }
-
-        private Storage Initialize()
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-                var storage = cache.FirstOrDefault(c => Equals(c));
-                if (storage != null)
-                {
-                    User.Storage = storage;
-                    User.Storage.User = User;
-                    _storage = storage._storage;
-                    _changes = storage._changes;
-                    _keys = storage._keys;
-                }
-                else
-                    cache.Add(this);
-                return storage;
-            }
-            return null;
         }
 
         /// <summary>
@@ -112,16 +52,8 @@ namespace VkBotCore
 
         private void Set(string key, string value, bool forced)
         {
-            var storage = Initialize();
-            if (storage != null)
-            {
-                User.Storage.Set(key, value, forced);
-                return;
-            }
-
             lock (_storage)
             {
-                _lastUpdate = DateTime.Now;
                 value = string.IsNullOrEmpty(value) ? null : value;
                 if (_keys == null) _keys = GetKeys();
 
@@ -167,7 +99,6 @@ namespace VkBotCore
         /// </summary>
         public void Save()
         {
-            Initialize();
             lock (_storage)
             {
                 foreach (var ch in _changes)

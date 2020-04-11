@@ -65,7 +65,7 @@ namespace VkBotCore
                 }
                 catch(Exception e)
                 {
-                    chat.SendMessage("Комманда задана неверно!");
+                    chat.SendMessageAsync("Комманда задана неверно!");
                     VkApi.Core.Log.Error(e.ToString());
                 }
                 return;
@@ -85,12 +85,24 @@ namespace VkBotCore
         {
             SendMessage(new MessagesSendParams
             {
-                RandomId = DateTime.Now.Second * DateTime.Now.Millisecond,
+                RandomId = GetRandomId(),
                 PeerId = peerId,
                 Message = message,
                 Keyboard = keyboard?.GetKeyboard(),
                 DisableMentions = disableMentions
             }); ;
+        }
+
+        public void SendMessageAsync(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false, Action continuation = null)
+        {
+            SendMessageAsync(new MessagesSendParams
+            {
+                RandomId = GetRandomId(),
+                PeerId = peerId,
+                Message = message,
+                Keyboard = keyboard?.GetKeyboard(),
+                DisableMentions = disableMentions
+            }, continuation);
         }
 
         public bool DeleteMessage(ulong id)
@@ -103,6 +115,14 @@ namespace VkBotCore
             VkApi.Messages.Send(message);
         }
 
+        public void SendMessageAsync(MessagesSendParams message, Action continuation = null)
+        {
+            if (continuation == null)
+                VkApi.Messages.SendAsync(message);
+            else
+                VkApi.Messages.SendAsync(message).GetAwaiter().OnCompleted(continuation);
+        }
+
         public void SendSticker(MessagesSendStickerParams message)
         {
             VkApi.Messages.SendSticker(message);
@@ -112,11 +132,22 @@ namespace VkBotCore
         {
             SendMessage(new MessagesSendParams
             {
-                RandomId = DateTime.Now.Second * DateTime.Now.Millisecond,
+                RandomId = GetRandomId(),
                 PeerId = peerId,
                 Message = keyboard.Message,
                 Keyboard = keyboard.GetKeyboard()
             });
+        }
+
+        public void SendKeyboardAsync(Keyboard keyboard, long peerId, Action continuation = null)
+        {
+            SendMessageAsync(new MessagesSendParams
+            {
+                RandomId = GetRandomId(),
+                PeerId = peerId,
+                Message = keyboard.Message,
+                Keyboard = keyboard.GetKeyboard()
+            }, continuation);
         }
 
         public event EventHandler<GetMessageEventArgs> GetMessage;
@@ -135,6 +166,13 @@ namespace VkBotCore
             ButtonClick?.Invoke(this, e);
 
             return !e.Cancel;
+        }
+
+        private Random rnd = new Random();
+
+        private int GetRandomId()
+        {
+            return rnd.Next();
         }
     }
 

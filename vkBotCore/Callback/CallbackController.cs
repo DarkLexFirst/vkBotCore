@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using VkNet.Abstractions;
 using VkNet.Model;
@@ -42,11 +43,13 @@ namespace VkBotCore.Callback
                 if (updates.SecretKey != _secretKey)
                     return BadRequest("Secret key is incorrect!");
 
-                if(updates.Type == CallbackReceive.Confirmation)
+                if (updates.Type == CallbackReceive.Confirmation)
                     return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
 
                 new Thread(() =>
                 {
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
                     try
                     {
                         VkCoreApiBase vkApi = Core.VkApi.Get(updates.GroupId);
@@ -58,12 +61,11 @@ namespace VkBotCore.Callback
                             case CallbackReceive.Message.New:
                             {
                                 var msg = Message.FromJson(new VkResponse(updates.Object));
+
+                                User user = vkApi.GetUser(msg.FromId.Value);
                                 Chat chat = vkApi.GetChat(msg.PeerId.Value);
                                 lock (chat)
                                 {
-                                    User user = null;
-                                    try { user = new User(vkApi, msg.FromId.Value); } catch { return; }
-
                                     vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);
                                 }
                                 break;
@@ -74,6 +76,8 @@ namespace VkBotCore.Callback
                     {
                         Core.Log.Error(e.ToString());
                     }
+                    Core.Log.Debug(stopwatch.ElapsedMilliseconds.ToString());
+                    stopwatch.Stop();
                 })
                 { IsBackground = true }.Start();
             }

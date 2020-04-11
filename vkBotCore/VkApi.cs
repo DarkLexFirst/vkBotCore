@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using VkBotCore.Configuration;
 using VkNet;
@@ -10,11 +10,11 @@ namespace VkBotCore
 {
     public class VkCoreApi : VkCoreApiBase
     {
-        Dictionary<long, VkCoreApiBase> _vkApi { get; set; }
+        ConcurrentDictionary<long, VkCoreApiBase> _vkApi { get; set; }
 
         public VkCoreApi(BotCore core) : base(core, 0)
         {
-            _vkApi = new Dictionary<long, VkCoreApiBase>();
+            _vkApi = new ConcurrentDictionary<long, VkCoreApiBase>();
 
             var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
             if (accesToken != null)
@@ -31,15 +31,15 @@ namespace VkBotCore
 
         public VkCoreApiBase Get(long groupId)
         {
-            if (_vkApi.ContainsKey(groupId))
-                return _vkApi[groupId];
-            var api = new VkCoreApiBase(Core, groupId);
             var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
             if (accesToken == null)
                 return this;
-            api.Authorize(new ApiAuthParams { AccessToken = accesToken });
-            _vkApi.Add(groupId, api);
-            return api;
+            return _vkApi.GetOrAdd(groupId, _groupId =>
+            {
+                var api = new VkCoreApiBase(Core, _groupId);
+                api.Authorize(new ApiAuthParams { AccessToken = accesToken });
+                return api;
+            });
         }
 
         public VkCoreApiBase[] GetAvailableApis(string _namespace)
@@ -64,7 +64,8 @@ namespace VkBotCore
         /// </summary>
         public long GroupId { get; private set; }
 
-        private Dictionary<long, Chat> Chats { get; set; }
+        private ConcurrentDictionary<long, Chat> _chatsCache { get; set; }
+        private ConcurrentDictionary<long, User> _usersCache { get; set; }
 
         /// <summary>
         /// Обработчик сообщений.
@@ -77,16 +78,15 @@ namespace VkBotCore
         /// </summary>
         public string[] AvailableNamespaces { get; private set; }
 
-        internal Storages StoragesCache { get; set; }
-
         public VkCoreApiBase(BotCore core, long groupId)
         {
             Core = core;
             GroupId = groupId;
-            Chats = new Dictionary<long, Chat>();
             MessageHandler = new MessageHandler(this);
-            StoragesCache = new Storages();
             AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
+            
+            _chatsCache = new ConcurrentDictionary<long, Chat>();
+            _usersCache = new ConcurrentDictionary<long, User>();
         }
 
         /// <summary>
@@ -96,18 +96,14 @@ namespace VkBotCore
 
         public Chat GetChat(long peerId)
         {
-            if (!Chats.ContainsKey(peerId))
+            return _chatsCache.GetOrAdd(peerId, _peerId =>
             {
-                Chat chat = GetNewChat?.Invoke(this, peerId) ?? new Chat(this, peerId);
-                Chats.Add(peerId, chat);
-
+                Chat chat = GetNewChat?.Invoke(this, _peerId) ?? new Chat(this, _peerId);
                 Core.VkApi.OnChatCreated(new ChatEventArgs(chat));
                 if (Core.VkApi != this)
                     OnChatCreated(new ChatEventArgs(chat));
                 return chat;
-            }
-            else
-                return Chats[peerId];
+            });
         }
 
         /// <summary>
@@ -119,5 +115,32 @@ namespace VkBotCore
         {
             ChatCreated?.Invoke(this, e);
         }
+
+        /// <summary>
+        /// Перопределение создания пользователей.
+        /// </summary>
+        public Func<VkCoreApiBase, long, User> GetNewUser { get; set; }
+
+        public User GetUser(long id)
+        {
+            return _usersCache.GetOrAdd(id, _id =>
+            {
+                User user = GetNewUser?.Invoke(this, _id) ?? new User(this, _id);
+                //Core.VkApi.OnUserCreated(new UserEventArgs(user));
+                //if (Core.VkApi != this)
+                //    OnUserCreated(new UserEventArgs(user));
+                return user;
+            });
+        }
+
+        ///// <summary>
+        ///// Событие вызываемое при инициализации пользователя.
+        ///// </summary>
+        //public event EventHandler<UserEventArgs> UserCreated;
+
+        //protected virtual void OnUserCreated(UserEventArgs e)
+        //{
+        //    UserCreated?.Invoke(this, e);
+        //}
     }
 }

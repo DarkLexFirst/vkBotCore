@@ -1,8 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using VkBotCore;
 
 namespace VkBotCore
 {
@@ -51,7 +48,7 @@ namespace VkBotCore
         {
             Console.WriteLine(message);
             if (PeerId == -1) return;
-            base.SendMessage(message);
+            base.SendMessageAsync(message);
         }
 
         protected enum LogValueType
