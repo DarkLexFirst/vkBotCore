@@ -39,9 +39,12 @@ namespace VkBotCore
                 try
                 {
                     var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
-                    var s = payload.Button.Split(':');
-                    OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
-                    return;
+                    if (payload.Button != null)
+                    {
+                        var s = payload.Button.Split(':');
+                        OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
+                        return;
+                    }
                 }
                 catch (Exception e)
                 {
