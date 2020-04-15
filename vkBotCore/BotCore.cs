@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -35,10 +36,30 @@ namespace VkBotCore
             PluginManager = new PluginManager(this);
             PluginManager.LoadPlugins();
             PluginManager.EnablePlugins();
-        }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+			StartSaveTimer();
+		}
+
+		private Timer _timer;
+		private void StartSaveTimer()
+		{
+			_timer = new Timer(1000);
+			_timer.AutoReset = true;
+			_timer.Elapsed += (s, e) => SaveAll();
+			_timer.Start();
+		}
+
+		private void SaveAll()
+		{
+			foreach(var api in VkApi._vkApi)
+			{
+				foreach (var user in api.Value._usersCache)
+					user.Value.Storage.Save();
+			}
+		}
+
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddSingleton(this);

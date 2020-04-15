@@ -20,6 +20,9 @@ namespace VkBotCore
         /// </summary>
         public string[] Keys { get => (_keys == null ? _keys = GetKeys() : _keys).ToArray(); }
 
+		private DateTime _lastSaveTime = DateTime.Now;
+		private TimeSpan _timeToSave = new TimeSpan(0, 5, 0);
+
         public Storage(User user)
         {
             User = user;
@@ -43,7 +46,7 @@ namespace VkBotCore
         }
 
         /// <summary>
-        /// Принудительно обнавляет ячейку в хранилище.
+        /// Принудительно обновляет ячейку в хранилище.
         /// </summary>
         public void ForcedSet(string key, string value)
         {
@@ -72,10 +75,13 @@ namespace VkBotCore
                 else if(!_keys.Contains(key))
                     _keys.Add(key);
 
-                if (forced)
-                    Set(key, value);
-                else if (!_changes.Contains(key))
-                    _changes.Add(key);
+				if (forced)
+				{
+					Set(key, value);
+					_changes.Remove(key);
+				}
+				else if (!_changes.Contains(key))
+					_changes.Add(key);
             }
         }
 
@@ -97,15 +103,19 @@ namespace VkBotCore
         /// <summary>
         /// Сохраняет все изменения.
         /// </summary>
-        public void Save()
+        public void Save(bool forced = false)
         {
+			if (!forced && DateTime.Now - _lastSaveTime < _timeToSave) return;
+
             lock (_storage)
             {
                 foreach (var ch in _changes)
                     Set(ch, _storage[ch]);
                 _changes.Clear();
             }
-        }
+
+			_lastSaveTime = DateTime.Now;
+		}
 
         public override bool Equals(object obj) => obj is Storage storage && Equals(storage);
         public bool Equals(Storage other) => User.Equals(other.User);

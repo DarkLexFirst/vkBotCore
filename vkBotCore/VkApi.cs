@@ -10,7 +10,7 @@ namespace VkBotCore
 {
     public class VkCoreApi : VkCoreApiBase
     {
-        ConcurrentDictionary<long, VkCoreApiBase> _vkApi { get; set; }
+        internal ConcurrentDictionary<long, VkCoreApiBase> _vkApi { get; private set; }
 
         public VkCoreApi(BotCore core) : base(core, 0)
         {
@@ -64,8 +64,8 @@ namespace VkBotCore
         /// </summary>
         public long GroupId { get; private set; }
 
-        private ConcurrentDictionary<long, Chat> _chatsCache { get; set; }
-        private ConcurrentDictionary<long, User> _usersCache { get; set; }
+		internal ConcurrentDictionary<long, Chat> _chatsCache { get; set; }
+		internal ConcurrentDictionary<long, User> _usersCache { get; set; }
 
         /// <summary>
         /// Обработчик сообщений.
