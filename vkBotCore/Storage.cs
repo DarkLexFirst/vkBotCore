@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace VkBotCore
 {
@@ -42,18 +43,18 @@ namespace VkBotCore
                     return value;
                 }
             }
-            set => Set(key, value, false);
+            set => Set(key, value, false, true);
         }
 
         /// <summary>
         /// Принудительно обновляет ячейку в хранилище.
         /// </summary>
-        public void ForcedSet(string key, string value)
+        public void ForcedSet(string key, string value, bool async = true)
         {
-            Set(key, value, true);
+            Set(key, value, true, async);
         }
 
-        private void Set(string key, string value, bool forced)
+        private void Set(string key, string value, bool forced, bool async)
         {
             lock (_storage)
             {
@@ -77,7 +78,10 @@ namespace VkBotCore
 
 				if (forced)
 				{
-					Set(key, value);
+					if (async)
+						SetAsync(key, value);
+					else
+						Set(key, value);
 					_changes.Remove(key);
 				}
 				else if (!_changes.Contains(key))
@@ -85,12 +89,17 @@ namespace VkBotCore
             }
         }
 
-        private void Set(string key, string value)
-        {
-            User.VkApi.Storage.Set(key, value, (ulong)User.Id);
-        }
+		private void Set(string key, string value)
+		{
+			User.VkApi.Storage.Set(key, value, (ulong)User.Id);
+		}
 
-        private string Get(string key)
+		private async Task SetAsync(string key, string value)
+		{
+			await User.VkApi.Storage.SetAsync(key, value, (ulong)User.Id);
+		}
+
+		private string Get(string key)
         {
             return User.VkApi.Storage.Get(new string[] { key }, (ulong)User.Id).FirstOrDefault().Value;
         }
@@ -109,9 +118,13 @@ namespace VkBotCore
 
             lock (_storage)
             {
+				if (_changes.Count == 0) return;
+				Task[] tasks = new Task[_changes.Count];
+				int i = 0;
                 foreach (var ch in _changes)
-                    Set(ch, _storage[ch]);
+                    tasks[i++] = SetAsync(ch, _storage[ch]);
                 _changes.Clear();
+				Task.WaitAll(tasks);
             }
 
 			_lastSaveTime = DateTime.Now;

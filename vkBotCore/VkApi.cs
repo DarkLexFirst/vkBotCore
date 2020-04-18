@@ -31,13 +31,14 @@ namespace VkBotCore
 
         public VkCoreApiBase Get(long groupId)
         {
-            var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
-            if (accesToken == null)
-                return this;
+			if (groupId == GroupId) return this;
             return _vkApi.GetOrAdd(groupId, _groupId =>
-            {
-                var api = new VkCoreApiBase(Core, _groupId);
-                api.Authorize(new ApiAuthParams { AccessToken = accesToken });
+			{
+				var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
+				if (accesToken == null)
+					return this;
+				var api = new VkCoreApiBase(Core, _groupId);
+				api.Authorize(new ApiAuthParams { AccessToken = accesToken });
                 return api;
             });
         }

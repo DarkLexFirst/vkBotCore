@@ -15,10 +15,6 @@ namespace VkBotCore.Callback
     {
         public BotCore Core { get; set; }
 
-        private readonly IConfiguration _configuration;
-
-        private readonly IVkApi _vkApi;
-
         private readonly string _secretKey;
 
         public CallbackController(BotCore core)
@@ -26,9 +22,7 @@ namespace VkBotCore.Callback
             try
             {
                 Core = core;
-                _configuration = Core.Configuration;
-                _vkApi = Core.VkApi;
-                _secretKey = _configuration.GetValue<string>("Config:SecretKey", null);
+                _secretKey = Core.Configuration.GetValue<string>("Config:SecretKey", null);
             }
             catch (Exception e)
             {
@@ -44,43 +38,43 @@ namespace VkBotCore.Callback
                     return BadRequest("Secret key is incorrect!");
 
                 if (updates.Type == CallbackReceive.Confirmation)
-                    return Ok(_configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", _configuration["Config:Confirmation"]));
+                    return Ok(Core.Configuration.GetValue($"Config:Groups:{updates.GroupId}:Confirmation", Core.Configuration["Config:Confirmation"]));
 
-                new Thread(() =>
-                {
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    try
-                    {
-                        VkCoreApiBase vkApi = Core.VkApi.Get(updates.GroupId);
-                        Core.PluginManager.PluginCallbackHandler(ref updates, vkApi);
-                        if (updates == null) return;
+				new Thread(() =>
+				{
+					Stopwatch stopwatch = new Stopwatch();
+					stopwatch.Start();
+					try
+					{
+						VkCoreApiBase vkApi = Core.VkApi.Get(updates.GroupId);
+						Core.PluginManager.PluginCallbackHandler(ref updates, vkApi);
+						if (updates == null) return;
 
-                        switch (updates.Type)
-                        {
-                            case CallbackReceive.Message.New:
-                            {
-                                var msg = Message.FromJson(new VkResponse(updates.Object));
+						switch (updates.Type)
+						{
+							case CallbackReceive.Message.New:
+							{
+								var msg = Message.FromJson(new VkResponse(updates.Object));
 
-                                User user = vkApi.GetUser(msg.FromId.Value);
-                                Chat chat = vkApi.GetChat(msg.PeerId.Value);
-                                lock (chat)
-                                {
-                                    vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Core.Log.Error(e.ToString());
-                    }
-                    Core.Log.Debug(stopwatch.ElapsedMilliseconds.ToString());
-                    stopwatch.Stop();
-                })
-                { IsBackground = true }.Start();
-            }
+								User user = vkApi.GetUser(msg.FromId.Value);
+								Chat chat = vkApi.GetChat(msg.PeerId.Value);
+								lock (chat)
+								{
+									vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);
+								}
+								break;
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						Core.Log.Error(e.ToString());
+					}
+					Core.Log.Debug(stopwatch.ElapsedMilliseconds.ToString());
+					stopwatch.Stop();
+				})
+				{ IsBackground = true }.Start();
+			}
             catch (Exception e)
             {
                 Core.Log.Error(e.ToString());

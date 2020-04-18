@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using VkBotCore.UI;
 using VkNet.Model;
 
@@ -94,14 +95,13 @@ namespace VkBotCore
                 VkApi.MessageHandler.SendMessage(message, PeerId, BaseKeyboard, disableMentions);
         }
 
-        /// <summary>
+		/// <summary>
 		/// Отправляет текстовое сообщение в диалог.
 		/// </summary>
-        public virtual void SendMessageAsync(string message, bool disableMentions = false, Action continuation = null)
-        {
-            if (!string.IsNullOrEmpty(message))
-                VkApi.MessageHandler.SendMessageAsync(message, PeerId, BaseKeyboard, disableMentions, continuation);
-        }
+		public virtual async Task SendMessageAsync(string message, bool disableMentions = false)
+		{
+			await VkApi.MessageHandler.SendMessageAsync(message, PeerId, BaseKeyboard, disableMentions);
+		}
 
         /// <summary>
         /// Отправляет текстовое сообщение в диалог.
@@ -114,9 +114,9 @@ namespace VkBotCore
         /// <summary>
         /// Отправляет текстовое сообщение в диалог.
         /// </summary>
-        public void SendMessageAsync(object obj, bool disableMentions = false, Action continuation = null)
+        public async Task SendMessageAsync(object obj, bool disableMentions = false)
         {
-            SendMessageAsync(obj?.ToString(), disableMentions, continuation);
+			await SendMessageAsync(obj?.ToString(), disableMentions);
         }
 
         /// <summary>
@@ -131,10 +131,10 @@ namespace VkBotCore
         /// <summary>
         /// Отправляет клавиатуру в диалог по её идентификатору.
         /// </summary>
-        public void SendKeyboardAsync(string keyboardId, Action continuation = null)
+        public async Task SendKeyboardAsync(string keyboardId)
         {
             if (_cachedKeyboards.ContainsKey(keyboardId))
-                SendKeyboardAsync(_cachedKeyboards[keyboardId], continuation);
+				await SendKeyboardAsync(_cachedKeyboards[keyboardId]);
         }
 
         /// <summary>
@@ -149,10 +149,10 @@ namespace VkBotCore
         /// <summary>
         /// Отправляет клавиатуру в диалог.
         /// </summary>
-        public void SendKeyboardAsync(Keyboard keyboard, Action continuation = null)
+        public async Task SendKeyboardAsync(Keyboard keyboard)
         {
             AddKeyboard(keyboard);
-            VkApi.MessageHandler.SendKeyboardAsync(keyboard, PeerId, continuation);
+			await VkApi.MessageHandler.SendKeyboardAsync(keyboard, PeerId);
         }
 
         /// <summary>

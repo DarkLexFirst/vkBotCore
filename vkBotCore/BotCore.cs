@@ -27,17 +27,27 @@ namespace VkBotCore
 
         public BotCore(IConfiguration configuration)
         {
-            Configuration = configuration;
+			Configuration = configuration;
 
-            VkApi = new VkCoreApi(this);
+			VkApi = new VkCoreApi(this);
 
-            Log = new LogChat(VkApi);
+			Log = new LogChat(VkApi);
 
-            PluginManager = new PluginManager(this);
-            PluginManager.LoadPlugins();
-            PluginManager.EnablePlugins();
+			PluginManager = new PluginManager(this);
+			PluginManager.LoadPlugins();
+			PluginManager.EnablePlugins();
+
+			Startup.OnDisable = OnDisable;
 
 			StartSaveTimer();
+		}
+
+		private void OnDisable()
+		{
+			Console.WriteLine("Shutdown...");
+			PluginManager.DisablePlugins();
+			SaveAll(true);
+			Console.WriteLine("Disabled");
 		}
 
 		private Timer _timer;
@@ -49,12 +59,12 @@ namespace VkBotCore
 			_timer.Start();
 		}
 
-		private void SaveAll()
+		private void SaveAll(bool forced = false)
 		{
 			foreach(var api in VkApi._vkApi)
 			{
 				foreach (var user in api.Value._usersCache)
-					user.Value.Storage.Save();
+					user.Value.Storage.Save(forced);
 			}
 		}
 

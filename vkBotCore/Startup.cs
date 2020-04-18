@@ -14,10 +14,13 @@ namespace VkBotCore
 {
     public class Startup
     {
+
+		internal static Action OnDisable;
         public static void Main(string[] args)
         {
             CultureInfo.CurrentCulture = new CultureInfo("ru-RU"); //fix datetime format on linux
             CreateWebHostBuilder(args).Build().Run();
+			OnDisable?.Invoke();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using VkBotCore.UI;
 using VkNet.Model;
@@ -13,8 +14,9 @@ namespace VkBotCore
         public VkCoreApiBase VkApi { get; set; }
 
         private Dictionary<Chat, Queue<long>> _lastMessages;
+		private long _messageResendBlockTime = 10;
 
-        public MessageHandler(VkCoreApiBase vkApi)
+		public MessageHandler(VkCoreApiBase vkApi)
         {
             VkApi = vkApi;
 
@@ -23,6 +25,9 @@ namespace VkBotCore
 
         public virtual void OnMessage(User user, string message, Chat chat, Message messageData)
         {
+			//защита от дублированных или задержанных сообщений
+			if ((DateTime.UtcNow - messageData.Date.Value).TotalSeconds > _messageResendBlockTime) return;
+
             var msgId = messageData.ConversationMessageId.Value;
             if (!_lastMessages.ContainsKey(chat))
                 _lastMessages.Add(chat, new Queue<long>());
@@ -33,8 +38,9 @@ namespace VkBotCore
                 if (_lastMessages[chat].Count > 10)
                     _lastMessages[chat].Dequeue();
             }
+			//защита от дублированных или задержанных сообщений
 
-            if (!string.IsNullOrEmpty(messageData.Payload))
+			if (!string.IsNullOrEmpty(messageData.Payload))
             {
                 try
                 {
@@ -93,19 +99,19 @@ namespace VkBotCore
                 Message = message,
                 Keyboard = keyboard?.GetKeyboard(),
                 DisableMentions = disableMentions
-            }); ;
+            });
         }
 
-        public void SendMessageAsync(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false, Action continuation = null)
+        public async Task SendMessageAsync(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
         {
-            SendMessageAsync(new MessagesSendParams
+            await SendMessageAsync(new MessagesSendParams
             {
                 RandomId = GetRandomId(),
                 PeerId = peerId,
                 Message = message,
                 Keyboard = keyboard?.GetKeyboard(),
                 DisableMentions = disableMentions
-            }, continuation);
+            });
         }
 
         public bool DeleteMessage(ulong id)
@@ -118,12 +124,9 @@ namespace VkBotCore
             VkApi.Messages.Send(message);
         }
 
-        public void SendMessageAsync(MessagesSendParams message, Action continuation = null)
+        public async Task SendMessageAsync(MessagesSendParams message)
         {
-            if (continuation == null)
-                VkApi.Messages.SendAsync(message);
-            else
-                VkApi.Messages.SendAsync(message).GetAwaiter().OnCompleted(continuation);
+			await VkApi.Messages.SendAsync(message);
         }
 
         public void SendSticker(MessagesSendStickerParams message)
@@ -142,15 +145,15 @@ namespace VkBotCore
             });
         }
 
-        public void SendKeyboardAsync(Keyboard keyboard, long peerId, Action continuation = null)
+        public async Task SendKeyboardAsync(Keyboard keyboard, long peerId)
         {
-            SendMessageAsync(new MessagesSendParams
+            await SendMessageAsync(new MessagesSendParams
             {
                 RandomId = GetRandomId(),
                 PeerId = peerId,
                 Message = keyboard.Message,
                 Keyboard = keyboard.GetKeyboard()
-            }, continuation);
+            });
         }
 
         public event EventHandler<GetMessageEventArgs> GetMessage;
@@ -177,7 +180,7 @@ namespace VkBotCore
         {
             return rnd.Next();
         }
-    }
+	}
 
     public class GetMessageEventArgs : EventArgs
     {

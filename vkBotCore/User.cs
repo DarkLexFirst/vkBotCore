@@ -28,10 +28,11 @@ namespace VkBotCore
         /// </summary>
         public bool IsAdmin { get => VkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id); }
 
-        /// <summary>
-        /// Хранилище.
-        /// </summary>
-        public Storage Storage { get; set; }
+		/// <summary>
+		/// Хранилище.
+		/// </summary>
+		/// <exception cref="VkNet.Exception.OutOfLimitsException"/>
+		public Storage Storage { get; set; }
 
         internal User(VkCoreApiBase vkApi, long id)
         {
