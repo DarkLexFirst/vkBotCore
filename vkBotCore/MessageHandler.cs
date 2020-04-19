@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Newtonsoft.Json;
 using VkBotCore.UI;
 using VkNet.Model;
@@ -21,7 +22,9 @@ namespace VkBotCore
             VkApi = vkApi;
 
             _lastMessages = new Dictionary<Chat, Queue<long>>();
-        }
+
+			InitializePoolWorker();
+		}
 
         public virtual void OnMessage(User user, string message, Chat chat, Message messageData)
         {
@@ -114,10 +117,17 @@ namespace VkBotCore
             });
         }
 
-        public bool DeleteMessage(ulong id)
-        {
-            return VkApi.Messages.Delete(new ulong[] { id }, false, (ulong)VkApi.GroupId, true).First().Value;
-        }
+		public void SendMessageWithPool(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
+		{
+			SendMessageWithPool(new MessagesSendParams
+			{
+				RandomId = GetRandomId(),
+				PeerId = peerId,
+				Message = message,
+				Keyboard = keyboard?.GetKeyboard(),
+				DisableMentions = disableMentions
+			});
+		}
 
         public void SendMessage(MessagesSendParams message)
         {
@@ -127,12 +137,13 @@ namespace VkBotCore
         public async Task SendMessageAsync(MessagesSendParams message)
         {
 			await VkApi.Messages.SendAsync(message);
-        }
+		}
 
-        public void SendSticker(MessagesSendStickerParams message)
-        {
-            VkApi.Messages.SendSticker(message);
-        }
+		public void SendMessageWithPool(MessagesSendParams message)
+		{
+			_sendPool.Add(message);
+			_poolTimer.Start();
+		}
 
         public void SendKeyboard(Keyboard keyboard, long peerId)
         {
@@ -154,9 +165,48 @@ namespace VkBotCore
                 Message = keyboard.Message,
                 Keyboard = keyboard.GetKeyboard()
             });
-        }
+		}
 
-        public event EventHandler<GetMessageEventArgs> GetMessage;
+		public void SendKeyboardWithPool(Keyboard keyboard, long peerId)
+		{
+			SendMessageWithPool(new MessagesSendParams
+			{
+				RandomId = GetRandomId(),
+				PeerId = peerId,
+				Message = keyboard.Message,
+				Keyboard = keyboard.GetKeyboard()
+			});
+		}
+
+		public void SendSticker(MessagesSendStickerParams message)
+		{
+			VkApi.Messages.SendSticker(message);
+		}
+
+		public bool DeleteMessage(ulong id)
+		{
+			return VkApi.Messages.Delete(new ulong[] { id }, false, (ulong)VkApi.GroupId, true).First().Value;
+		}
+
+		private Timer _poolTimer;
+		private List<MessagesSendParams> _sendPool;
+		private void InitializePoolWorker()
+		{
+			_sendPool = new List<MessagesSendParams>();
+
+			_poolTimer = new Timer(15);
+			_poolTimer.AutoReset = false;
+			_poolTimer.Elapsed += async(s, e) =>
+			{
+				if (_sendPool.Count == 0) return;
+				var messages = _sendPool;
+				_sendPool = new List<MessagesSendParams>();
+				foreach (var message in messages)
+					await SendMessageAsync(message);
+			};
+		}
+
+		public event EventHandler<GetMessageEventArgs> GetMessage;
 
         protected virtual bool OnGetMessage(GetMessageEventArgs e)
         {

@@ -96,69 +96,103 @@ namespace VkBotCore
         }
 
 		/// <summary>
-		/// Отправляет текстовое сообщение в диалог.
+		/// Отправляет текстовое сообщение в диалог. (Асинхронная отправка)
 		/// </summary>
 		public virtual async Task SendMessageAsync(string message, bool disableMentions = false)
 		{
 			await VkApi.MessageHandler.SendMessageAsync(message, PeerId, BaseKeyboard, disableMentions);
 		}
 
-        /// <summary>
-        /// Отправляет текстовое сообщение в диалог.
-        /// </summary>
-        public void SendMessage(object obj, bool disableMentions = false)
+		/// <summary>
+		/// Отправляет текстовое сообщение в диалог. (Упорядоченная отправка через пул)
+		/// </summary>
+		public virtual void SendMessageWithPool(string message, bool disableMentions = false)
+		{
+			VkApi.MessageHandler.SendMessageWithPool(message, PeerId, BaseKeyboard, disableMentions);
+		}
+
+		/// <summary>
+		/// Отправляет текстовое сообщение в диалог.
+		/// </summary>
+		public void SendMessage(object obj, bool disableMentions = false)
         {
             SendMessage(obj?.ToString(), disableMentions);
         }
 
-        /// <summary>
-        /// Отправляет текстовое сообщение в диалог.
-        /// </summary>
-        public async Task SendMessageAsync(object obj, bool disableMentions = false)
+		/// <summary>
+		/// Отправляет текстовое сообщение в диалог. (Асинхронная отправка)
+		/// </summary>
+		public async Task SendMessageAsync(object obj, bool disableMentions = false)
         {
 			await SendMessageAsync(obj?.ToString(), disableMentions);
-        }
+		}
 
-        /// <summary>
-        /// Отправляет клавиатуру в диалог по её идентификатору.
-        /// </summary>
-        public void SendKeyboard(string keyboardId)
+		/// <summary>
+		/// Отправляет текстовое сообщение в диалог. (Упорядоченная отправка через пул)
+		/// </summary>
+		public virtual void SendMessageWithPool(object obj, bool disableMentions = false)
+		{
+			SendMessageWithPool(obj?.ToString(), disableMentions);
+		}
+
+		/// <summary>
+		/// Отправляет клавиатуру в диалог по её идентификатору.
+		/// </summary>
+		public void SendKeyboard(string keyboardId)
         {
             if (_cachedKeyboards.ContainsKey(keyboardId))
                 SendKeyboard(_cachedKeyboards[keyboardId]);
         }
 
-        /// <summary>
-        /// Отправляет клавиатуру в диалог по её идентификатору.
-        /// </summary>
-        public async Task SendKeyboardAsync(string keyboardId)
+		/// <summary>
+		/// Отправляет клавиатуру в диалог по её идентификатору. (Асинхронная отправка)
+		/// </summary>
+		public async Task SendKeyboardAsync(string keyboardId)
         {
             if (_cachedKeyboards.ContainsKey(keyboardId))
 				await SendKeyboardAsync(_cachedKeyboards[keyboardId]);
-        }
+		}
 
-        /// <summary>
-        /// Отправляет клавиатуру в диалог.
-        /// </summary>
-        public void SendKeyboard(Keyboard keyboard)
+		/// <summary>
+		/// Отправляет клавиатуру в диалог по её идентификатору.
+		/// </summary>
+		public void SendKeyboardWithPool(string keyboardId)
+		{
+			if (_cachedKeyboards.ContainsKey(keyboardId))
+				SendKeyboardWithPool(_cachedKeyboards[keyboardId]);
+		}
+
+		/// <summary>
+		/// Отправляет клавиатуру в диалог.
+		/// </summary>
+		public void SendKeyboard(Keyboard keyboard)
         {
             AddKeyboard(keyboard);
             VkApi.MessageHandler.SendKeyboard(keyboard, PeerId);
         }
 
-        /// <summary>
-        /// Отправляет клавиатуру в диалог.
-        /// </summary>
-        public async Task SendKeyboardAsync(Keyboard keyboard)
+		/// <summary>
+		/// Отправляет клавиатуру в диалог. (Асинхронная отправка)
+		/// </summary>
+		public async Task SendKeyboardAsync(Keyboard keyboard)
         {
             AddKeyboard(keyboard);
 			await VkApi.MessageHandler.SendKeyboardAsync(keyboard, PeerId);
-        }
+		}
 
-        /// <summary>
-        /// Добавляет клавиатуру в кэш для дальнейшего вызова по идентификатору.
-        /// </summary>
-        public void AddKeyboard(Keyboard keyboard)
+		/// <summary>
+		/// Отправляет клавиатуру в диалог. (Упорядоченная отправка через пул)
+		/// </summary>
+		public void SendKeyboardWithPool(Keyboard keyboard)
+		{
+			AddKeyboard(keyboard);
+			VkApi.MessageHandler.SendKeyboardWithPool(keyboard, PeerId);
+		}
+
+		/// <summary>
+		/// Добавляет клавиатуру в кэш для дальнейшего вызова по идентификатору.
+		/// </summary>
+		public void AddKeyboard(Keyboard keyboard)
         {
             if (!_cachedKeyboards.ContainsKey(keyboard.Id))
                 _cachedKeyboards.Add(keyboard.Id, keyboard);
