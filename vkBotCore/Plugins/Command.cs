@@ -14,7 +14,7 @@ namespace VkBotCore.Plugins
 	{
 		public string Name { get; set; }
 
-        public Dictionary<string, Overload> Overloads { get; set; }
+		public Dictionary<string, Overload> Overloads { get; set; }
 	}
 
 	public class Overload
@@ -24,8 +24,8 @@ namespace VkBotCore.Plugins
 
 		public bool IsHidden { get; set; }
 
-        public MethodInfo Method { get; set; }
+		public MethodInfo Method { get; set; }
 
-        public bool UseFullDescription { get; set; }
-    }
+		public bool UseFullDescription { get; set; }
+	}
 }

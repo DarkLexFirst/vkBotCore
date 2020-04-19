@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace VkBotCore.Configuration
 {
-    public static class ConfigurationAddon
-    {
-        public static T[] GetArray<T>(this IConfiguration configuration, string key, T[] defaultValue = null)
-        {
-            return configuration.GetSection(key)?.Get<T[]>() ?? defaultValue ?? new T[0];
-        }
-    }
+	public static class ConfigurationAddon
+	{
+		public static T[] GetArray<T>(this IConfiguration configuration, string key, T[] defaultValue = null)
+		{
+			return configuration.GetSection(key)?.Get<T[]>() ?? defaultValue ?? new T[0];
+		}
+	}
 }

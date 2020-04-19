@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace VkBotCore.UI
 {
-    [Serializable]
-    public class KeyboardButtonPayload
-    {
-        [JsonProperty("button")]
-        public string Button { get; set; }
-    }
+	[Serializable]
+	public class KeyboardButtonPayload
+	{
+		[JsonProperty("button")]
+		public string Button { get; set; }
+	}
 }

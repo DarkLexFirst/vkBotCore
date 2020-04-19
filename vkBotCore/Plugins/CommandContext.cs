@@ -6,19 +6,19 @@ using VkNet.Model;
 
 namespace VkBotCore.Plugins
 {
-    public class CommandContext
-    {
-        public BotCore Core { get; set; }
-        public User Sender { get; set; }
-        public Chat Chat { get; set; }
-        public Message MessageData { get; set; }
+	public class CommandContext
+	{
+		public BotCore Core { get; set; }
+		public User Sender { get; set; }
+		public Chat Chat { get; set; }
+		public Message MessageData { get; set; }
 
-        public CommandContext(BotCore core, User sender, Chat chat, Message messageData)
-        {
-            Core = core;
-            Sender = sender;
-            Chat = chat;
-            MessageData = messageData;
-        }
-    }
+		public CommandContext(BotCore core, User sender, Chat chat, Message messageData)
+		{
+			Core = core;
+			Sender = sender;
+			Chat = chat;
+			MessageData = messageData;
+		}
+	}
 }

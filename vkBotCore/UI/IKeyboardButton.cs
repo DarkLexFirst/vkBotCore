@@ -2,10 +2,10 @@
 
 namespace VkBotCore.UI
 {
-    public interface IKeyboardButton
-    {
-        string Id { get; set; }
+	public interface IKeyboardButton
+	{
+		string Id { get; set; }
 
-        MessageKeyboardButton GetButton(Keyboard keyboard);
-    }
+		MessageKeyboardButton GetButton(Keyboard keyboard);
+	}
 }

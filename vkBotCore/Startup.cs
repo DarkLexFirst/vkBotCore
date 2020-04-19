@@ -12,23 +12,23 @@ using Microsoft.Extensions.Logging;
 
 namespace VkBotCore
 {
-    public class Startup
-    {
+	public class Startup
+	{
 
 		internal static Action OnDisable;
-        public static void Main(string[] args)
-        {
-            CultureInfo.CurrentCulture = new CultureInfo("ru-RU"); //fix datetime format on linux
-            CreateWebHostBuilder(args).Build().Run();
+		public static void Main(string[] args)
+		{
+			CultureInfo.CurrentCulture = new CultureInfo("ru-RU"); //fix datetime format on linux
+			CreateWebHostBuilder(args).Build().Run();
 			OnDisable?.Invoke();
-        }
+		}
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
-        {
-            string port = args.Length > 0 ? port = args[0] : "80";
-            return WebHost.CreateDefaultBuilder(args)
-                .UseUrls($"http://*:{port}")
-                .UseStartup<BotCore>();
-        }
-    }
+		public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+		{
+			string port = args.Length > 0 ? port = args[0] : "80";
+			return WebHost.CreateDefaultBuilder(args)
+				.UseUrls($"http://*:{port}")
+				.UseStartup<BotCore>();
+		}
+	}
 }

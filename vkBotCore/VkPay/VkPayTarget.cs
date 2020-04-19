@@ -1,8 +1,8 @@
 ﻿namespace VkBotCore.VKPay
 {
-    public enum VkPayTarget
-    {
-        Group,
-        User
-    }
+	public enum VkPayTarget
+	{
+		Group,
+		User
+	}
 }

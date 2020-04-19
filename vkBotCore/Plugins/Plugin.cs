@@ -8,15 +8,15 @@ namespace VkBotCore.Plugins
 
 		[ThreadStatic] public static CommandContext CurrentContext = null;
 
-        /// <summary>
-        /// API сообществ, использующих пространство имён, содержащее данный плагин.
-        /// </summary>
-        public VkCoreApiBase[] AvailableApis { get; private set; }
+		/// <summary>
+		/// API сообществ, использующих пространство имён, содержащее данный плагин.
+		/// </summary>
+		public VkCoreApiBase[] AvailableApis { get; private set; }
 
 		public void OnEnable(PluginManager pluginManager)
 		{
-            PluginManager = pluginManager;
-            AvailableApis = pluginManager.GetAvailableApis(GetType());
+			PluginManager = pluginManager;
+			AvailableApis = pluginManager.GetAvailableApis(GetType());
 			OnEnable();
 		}
 
