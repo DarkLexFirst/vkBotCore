@@ -198,11 +198,15 @@ namespace VkBotCore
 			_poolTimer.AutoReset = false;
 			_poolTimer.Elapsed += async (s, e) =>
 			{
-				if (_sendPool.Count == 0) return;
-				var messages = _sendPool;
-				_sendPool = new List<MessagesSendParams>();
-				foreach (var message in messages)
-					await SendMessageAsync(message);
+				try
+				{
+					if (_sendPool.Count == 0) return;
+					var messages = _sendPool;
+					_sendPool = new List<MessagesSendParams>();
+					foreach (var message in messages)
+						await SendMessageAsync(message);
+				}
+				catch { }
 			};
 		}
 

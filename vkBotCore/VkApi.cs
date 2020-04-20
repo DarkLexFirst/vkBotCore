@@ -83,6 +83,7 @@ namespace VkBotCore
 		{
 			Core = core;
 			GroupId = groupId;
+			RequestsPerSecond = Core.Configuration.GetValue($"Config:Groups:{groupId}:RequestsPerSecond", RequestsPerSecond);
 			MessageHandler = new MessageHandler(this);
 			AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
 
