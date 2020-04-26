@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
 using VkBotCore.UI;
+using VkNet.Enums.SafetyEnums;
 using VkNet.Model;
 using VkNet.Model.RequestParams;
 
@@ -43,6 +44,36 @@ namespace VkBotCore
 			}
 			//защита от дублированных или задержанных сообщений
 
+
+			//actions
+			if (messageData.Action != null)
+			{
+				if (messageData.Action.Type == MessageAction.ChatKickUser)
+				{
+					if (messageData.Action.MemberId == -VkApi.GroupId)
+					{
+						chat.OnKick(user);
+						VkApi._chatsCache.Remove(chat.PeerId, out _);
+						_lastMessages.Remove(chat);
+					}
+					else
+						chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), user);
+					return;
+				}
+				else if (messageData.Action.Type == MessageAction.ChatInviteUser)
+				{
+					chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), user, false);
+					return;
+				}
+				else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
+				{
+					chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), null, true);
+					return;
+				}
+			}
+
+
+			//buttons
 			if (!string.IsNullOrEmpty(messageData.Payload))
 			{
 				try
@@ -61,6 +92,8 @@ namespace VkBotCore
 				}
 			}
 
+
+			//commands
 			if ((message.StartsWith("/") || message.StartsWith(".")) && message.Length != 1)
 			{
 				try
@@ -83,6 +116,7 @@ namespace VkBotCore
 				return;
 			}
 
+			//other
 			if (!OnGetMessage(new GetMessageEventArgs(chat, user, message, messageData))) return;
 			chat.OnMessasge(user, message, messageData);
 		}
@@ -142,7 +176,8 @@ namespace VkBotCore
 		public void SendMessageWithPool(MessagesSendParams message)
 		{
 			_sendPool.Add(message);
-			_poolTimer.Start();
+			if (!_poolTimer.Enabled)
+				_poolTimer.Start();
 		}
 
 		public void SendKeyboard(Keyboard keyboard, long peerId)

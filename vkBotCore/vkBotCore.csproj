@@ -5,12 +5,16 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Authors>Aleksey Lashov</Authors>
-    <Company />
+    <Authors>Alexey Lashov</Authors>
+    <Company>Alexey Lashov</Company>
     <PackageId>VkBotCore</PackageId>
     <Product>VkBotCore</Product>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
+    <Description>vkBot платформа для VK Callback-API</Description>
+    <Copyright>Copyright (c) Alexey Lashov 2020</Copyright>
+    <PackageProjectUrl>https://github.com/DarkLexFirst/VkDonateApi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/DarkLexFirst/VkDonateApi</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -191,6 +191,16 @@ namespace TestPlugin
             {
                 context.Chat.SendMessageAsync(string.Join(", ", context.Sender.Storage.Keys));
             }
-        }
-    }
+		}
+
+		[Command(IsHidden = true)]
+		private static void poolTest(CommandContext context, params string[] message)
+		{
+			if (context.Sender.IsAdmin)
+			{
+				for (var i = 0; i < 10; i++)
+					context.Chat.SendMessageWithPool(i);
+			}
+		}
+	}
 }

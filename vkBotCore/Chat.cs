@@ -38,12 +38,32 @@ namespace VkBotCore
 			_cachedKeyboards = new Dictionary<string, Keyboard>();
 		}
 
-		public virtual void OnMessasge(User user, string message, Message messageData)
+		protected internal virtual void OnMessasge(User user, string message, Message messageData)
 		{
 
 		}
 
-		public virtual void OnCommand(User user, string command, string[] args, Message messageData)
+		protected internal virtual void OnCommand(User user, string command, string[] args, Message messageData)
+		{
+
+		}
+
+		protected internal virtual void OnJoin(User addedBy)
+		{
+
+		}
+
+		protected internal virtual void OnKick(User kickedBy)
+		{
+
+		}
+
+		protected internal virtual void OnAddUser(User user, User addedBy, bool joinByLink)
+		{
+
+		}
+
+		protected internal virtual void OnKickUser(User user, User kickedBy)
 		{
 
 		}

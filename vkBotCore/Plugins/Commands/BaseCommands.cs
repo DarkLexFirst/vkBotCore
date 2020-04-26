@@ -120,5 +120,14 @@ namespace VkBotCore.Plugins.Commands
 					context.Chat.SendMessageAsync($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
 			}
 		}
+		[Command(IsHidden = true)]
+		private static void test(CommandContext context, int lim = 10)
+		{
+			if (context.Sender.IsAdmin)
+			{
+				for (var i = 0; i < lim; i++)
+					context.Chat.SendMessageWithPool(i);
+			}
+		}
 	}
 }
