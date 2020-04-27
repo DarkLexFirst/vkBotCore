@@ -175,28 +175,12 @@ namespace VkBotCore
 
 		public void SendMessage(MessagesSendParams message)
 		{
-			try
-			{
-				VkApi.Messages.Send(message);
-			}
-			catch
-			{
-				BaseChat baseChat;
-				VkApi._chatsCache.Remove(message.PeerId.Value, out baseChat);
-				if (baseChat is Chat chat) chat.OnKick(null);
-			}
+			VkApi.Messages.Send(message);
 		}
 
 		public async Task SendMessageAsync(MessagesSendParams message)
 		{
-			var send = VkApi.Messages.SendAsync(message);
-			await send;
-			if(send.Exception != null)
-			{
-				BaseChat baseChat;
-				VkApi._chatsCache.Remove(message.PeerId.Value, out baseChat);
-				if (baseChat is Chat chat) chat.OnKick(null);
-			}
+			await VkApi.Messages.SendAsync(message);
 		}
 
 		public void SendMessageWithPool(MessagesSendParams message)
