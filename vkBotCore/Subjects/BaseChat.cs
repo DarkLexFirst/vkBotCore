@@ -30,7 +30,9 @@ namespace VkBotCore.Subjects
 		/// <summary>
 		/// Определяет, является ли данный диалог личной перепиской пользователя с сообществом.
 		/// </summary>
-		public static bool IsUserConversation(long peerId) => peerId < 2000000000;
+		public static bool IsUserConversation(long peerId) => peerId < BasePeerId;
+
+		public const long BasePeerId = 2000000000;
 
 
 		private Dictionary<string, Keyboard> _cachedKeyboards;

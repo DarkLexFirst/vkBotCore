@@ -13,6 +13,8 @@ namespace VkBotCore.Subjects
 	/// </summary>
 	public class Chat : BaseChat
 	{
+		private string _inviteLinkCache { get; set; }
+
 		public Chat(VkCoreApiBase vkApi, long peerId) : base(vkApi, peerId)
 		{
 
@@ -73,7 +75,15 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public void Kick(long id)
 		{
-			VkApi.Messages.RemoveChatUser((ulong)PeerId % 2000000000, id);
+			VkApi.Messages.RemoveChatUser((ulong)PeerId % BasePeerId, id);
+		}
+
+		/// <summary>
+		/// Осуществляет выход из диалога.
+		/// </summary>
+		public void Leave()
+		{
+			VkApi.Messages.RemoveChatUser((ulong)PeerId % BasePeerId, VkApi.GroupId);
 		}
 
 		/// <summary>
@@ -89,6 +99,16 @@ namespace VkBotCore.Subjects
 			{
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// Возвращает ссылку для приглашения пользователя в беседу.
+		/// </summary>
+		public string GetInviteLink(bool reset = false)
+		{
+			if (reset || _inviteLinkCache == null)
+				_inviteLinkCache = VkApi.Messages.GetInviteLink((ulong)PeerId, reset);
+			return _inviteLinkCache;
 		}
 
 		/// <summary>

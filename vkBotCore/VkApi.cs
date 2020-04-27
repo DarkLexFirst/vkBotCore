@@ -97,8 +97,14 @@ namespace VkBotCore
 		/// </summary>
 		public Func<VkCoreApiBase, long, BaseChat> GetNewChat { get; set; }
 
+		/// <summary>
+		/// Инициализирует новый диалог.
+		/// </summary>
 		public T GetChat<T>(long peerId) where T : BaseChat => (T)GetChat(peerId);
 
+		/// <summary>
+		/// Инициализирует новый диалог.
+		/// </summary>
 		public BaseChat GetChat(long peerId)
 		{
 			return _chatsCache.GetOrAdd(peerId, _peerId =>
@@ -112,7 +118,16 @@ namespace VkBotCore
 		}
 
 		/// <summary>
-		/// Событие вызываемое при инициализации чата.
+		/// Создаёт новый диалог.
+		/// </summary>
+		public Chat CreateNewChat(string title)
+		{
+			long peerId = Messages.CreateChat(null, title) + BaseChat.BasePeerId;
+			return GetChat<Chat>(peerId);
+		}
+
+		/// <summary>
+		/// Событие, вызываемое при инициализации чата.
 		/// </summary>
 		public event EventHandler<ChatEventArgs> ChatCreated;
 
@@ -142,7 +157,7 @@ namespace VkBotCore
 		}
 
 		///// <summary>
-		///// Событие вызываемое при инициализации пользователя.
+		///// Событие, вызываемое при инициализации пользователя.
 		///// </summary>
 		//public event EventHandler<UserEventArgs> UserCreated;
 
