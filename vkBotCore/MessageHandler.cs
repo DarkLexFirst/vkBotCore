@@ -54,11 +54,7 @@ namespace VkBotCore
 					if (messageData.Action.Type == MessageAction.ChatKickUser)
 					{
 						//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
-						//{
 						//	_chat.OnKick(sender);
-						//	VkApi._chatsCache.Remove(_chat.PeerId, out _);
-						//	_lastMessages.Remove(_chat);
-						//}
 						//else
 							_chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender);
 						return;
@@ -175,12 +171,38 @@ namespace VkBotCore
 
 		public void SendMessage(MessagesSendParams message)
 		{
-			VkApi.Messages.Send(message);
+			try
+			{
+				VkApi.Messages.Send(message);
+			}
+			catch (Exception e)
+			{
+				long peerId = message.PeerId.Value;
+				if (!BaseChat.IsUserConversation(peerId))
+				{
+					VkApi.GetChat<Chat>(peerId).OnKick(null);
+					return;
+				}
+				throw e;
+			}
 		}
 
 		public async Task SendMessageAsync(MessagesSendParams message)
 		{
-			await VkApi.Messages.SendAsync(message);
+			try
+			{
+				await VkApi.Messages.SendAsync(message);
+			}
+			catch (Exception e)
+			{
+				long peerId = message.PeerId.Value;
+				if (!BaseChat.IsUserConversation(peerId))
+				{
+					VkApi.GetChat<Chat>(peerId).OnKick(null);
+					return;
+				}
+				throw e;
+			}
 		}
 
 		public void SendMessageWithPool(MessagesSendParams message)
