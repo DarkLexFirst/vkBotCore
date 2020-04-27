@@ -4,10 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
+using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
-using VkNet.Model;
 using VkNet.Model.RequestParams;
+using Message = VkNet.Model.Message;
 
 namespace VkBotCore
 {
@@ -15,19 +16,19 @@ namespace VkBotCore
 	{
 		public VkCoreApiBase VkApi { get; set; }
 
-		private Dictionary<Chat, Queue<long>> _lastMessages;
+		private Dictionary<BaseChat, Queue<long>> _lastMessages;
 		private long _messageResendBlockTime = 10;
 
 		public MessageHandler(VkCoreApiBase vkApi)
 		{
 			VkApi = vkApi;
 
-			_lastMessages = new Dictionary<Chat, Queue<long>>();
+			_lastMessages = new Dictionary<BaseChat, Queue<long>>();
 
 			InitializePoolWorker();
 		}
 
-		public virtual void OnMessage(User user, string message, Chat chat, Message messageData)
+		public virtual void OnMessage(IUser sender, string message, BaseChat chat, Message messageData)
 		{
 			//защита от дублированных или задержанных сообщений
 			if ((DateTime.UtcNow - messageData.Date.Value).TotalSeconds > _messageResendBlockTime) return;
@@ -48,80 +49,89 @@ namespace VkBotCore
 			//actions
 			if (messageData.Action != null)
 			{
-				if (messageData.Action.Type == MessageAction.ChatKickUser)
+				if (chat is Chat _chat)
 				{
-					if (messageData.Action.MemberId == -VkApi.GroupId)
+					if (messageData.Action.Type == MessageAction.ChatKickUser)
 					{
-						chat.OnKick(user);
-						VkApi._chatsCache.Remove(chat.PeerId, out _);
-						_lastMessages.Remove(chat);
+						//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
+						//{
+						//	_chat.OnKick(sender);
+						//	VkApi._chatsCache.Remove(_chat.PeerId, out _);
+						//	_lastMessages.Remove(_chat);
+						//}
+						//else
+							_chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender);
+						return;
 					}
-					else
-						chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), user);
-					return;
-				}
-				else if (messageData.Action.Type == MessageAction.ChatInviteUser)
-				{
-					chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), user, false);
-					return;
-				}
-				else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
-				{
-					chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), null, true);
-					return;
-				}
-			}
-
-
-			//buttons
-			if (!string.IsNullOrEmpty(messageData.Payload))
-			{
-				try
-				{
-					var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
-					if (payload.Button != null)
+					else if (messageData.Action.Type == MessageAction.ChatInviteUser)
 					{
-						var s = payload.Button.Split(':');
-						OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
+						if (messageData.Action.MemberId == -VkApi.GroupId)
+							_chat.OnJoin(sender);
+						else
+							_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
+						return;
+					}
+					else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
+					{
+						_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), null, true);
 						return;
 					}
 				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e);
-				}
 			}
 
 
-			//commands
-			if ((message.StartsWith("/") || message.StartsWith(".")) && message.Length != 1)
+			if (sender is User user)
 			{
-				try
+				//buttons
+				if (!string.IsNullOrEmpty(messageData.Payload))
 				{
-					message = message.Replace("ё", "е");
-					VkApi.Core.PluginManager.HandleCommand(user, chat, message, messageData);
-
-					message = message.Substring(1);
-					var args = message.Split(' ').ToList();
-					string commandName = args.First();
-					args.Remove(commandName);
-
-					chat.OnCommand(user, commandName.ToLower(), args.ToArray(), messageData);
+					try
+					{
+						var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
+						if (payload.Button != null)
+						{
+							var s = payload.Button.Split(':');
+							OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
+							return;
+						}
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine(e);
+					}
 				}
-				catch (Exception e)
+
+
+				//commands
+				if ((message.StartsWith("/") || message.StartsWith(".")) && message.Length != 1)
 				{
-					chat.SendMessageAsync("Комманда задана неверно!");
-					VkApi.Core.Log.Error(e.ToString());
+					try
+					{
+						message = message.Replace("ё", "е");
+						VkApi.Core.PluginManager.HandleCommand(user, chat, message, messageData);
+
+						message = message.Substring(1);
+						var args = message.Split(' ').ToList();
+						string commandName = args.First();
+						args.Remove(commandName);
+
+						chat.OnCommand(user, commandName.ToLower(), args.ToArray(), messageData);
+					}
+					catch (Exception e)
+					{
+						chat.SendMessageAsync("Комманда задана неверно!");
+						VkApi.Core.Log.Error(e.ToString());
+					}
+					return;
 				}
-				return;
 			}
 
 			//other
-			if (!OnGetMessage(new GetMessageEventArgs(chat, user, message, messageData))) return;
-			chat.OnMessasge(user, message, messageData);
+			if (!OnGetMessage(new GetMessageEventArgs(chat, sender, message, messageData))) return;
+			chat.OnMessasge(sender, message, messageData);
 		}
 
-		public virtual void OnButtonClick(Chat chat, User user, string message, string keyboardId, string buttonId, Message messageData)
+		public virtual void OnButtonClick(BaseChat chat, User user, string message, string keyboardId, string buttonId, Message messageData)
 		{
 			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, message, keyboardId, buttonId, messageData))) return;
 			chat.InvokeButton(user, keyboardId, buttonId);
@@ -271,38 +281,31 @@ namespace VkBotCore
 		}
 	}
 
-	public class GetMessageEventArgs : EventArgs
+	public class GetMessageEventArgs : GetMessageEventArgs<IUser>
+	{
+		public GetMessageEventArgs(BaseChat chat, IUser sender, string message, Message messageData) : base(chat, sender, message, messageData)
+		{
+		}
+	}
+
+	public class GetMessageEventArgs<TUser> : EventArgs where TUser : IUser
 	{
 		public bool Cancel { get; set; }
 
-		public Chat Chat { get; set; }
+		public BaseChat Chat { get; set; }
 
-		public User Sender { get; set; }
+		public TUser Sender { get; set; }
 
 		public string Message { get; set; }
 
 		public Message MessageData { get; set; }
 
-		public GetMessageEventArgs(Chat chat, User sender, string message, Message messageData)
+		public GetMessageEventArgs(BaseChat chat, TUser sender, string message, Message messageData)
 		{
 			Chat = chat;
 			Sender = sender;
 			Message = message;
 			MessageData = messageData;
-		}
-	}
-
-	public class ButtonClickEventArgs : GetMessageEventArgs
-	{
-
-		public string KeyboardId { get; set; }
-
-		public string ButtonId { get; set; }
-
-		public ButtonClickEventArgs(Chat chat, User sender, string message, string keyboardId, string buttonId, Message messageData) : base(chat, sender, message, messageData)
-		{
-			KeyboardId = keyboardId;
-			ButtonId = buttonId;
 		}
 	}
 }

@@ -3,6 +3,7 @@ using VkBotCore;
 using VkBotCore.Callback;
 using VkBotCore.Plugins;
 using VkBotCore.Plugins.Attributes;
+using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkBotCore.VKPay;
 using VkNet.Utils;
@@ -19,7 +20,7 @@ namespace TestPlugin
                 api.ChatCreated += (s, e) => LoadKeyboards(e.Chat);
         }
 
-        public void LoadKeyboards(Chat chat)
+        public void LoadKeyboards(BaseChat chat)
         {
             //клавиатура с наивысшим приоритетом, коорая обновляется при каждой отправке сообщения ботом
             var keyboard = chat.BaseKeyboard = new Keyboard(null) { Id = "main_keyboard" };
@@ -93,7 +94,7 @@ namespace TestPlugin
         public Updates CallbackVkPayHandler(Updates updates, VkCoreApiBase vkApi)
         {
             var msg = new VkResponse(updates.Object);
-            var user = vkApi.GetUser(msg["from_id"]);
+            var user = vkApi.GetUser<User>(msg["from_id"]);
             vkApi.Core.Log.Debug($"amount: {msg["amount"] / 1000}, from: {user.FirstName} {user.LastName}, description: {msg["description"]}");
             return updates;
         }

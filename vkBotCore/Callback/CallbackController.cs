@@ -3,9 +3,9 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Threading;
-using VkNet.Abstractions;
-using VkNet.Model;
+using VkBotCore.Subjects;
 using VkNet.Utils;
+using Message = VkNet.Model.Message;
 
 namespace VkBotCore.Callback
 {
@@ -56,8 +56,8 @@ namespace VkBotCore.Callback
 							{
 								var msg = Message.FromJson(new VkResponse(updates.Object));
 
-								User user = vkApi.GetUser(msg.FromId.Value);
-								Chat chat = vkApi.GetChat(msg.PeerId.Value);
+								IUser user = vkApi.GetUser(msg.FromId.Value);
+								BaseChat chat = vkApi.GetChat(msg.PeerId.Value);
 								lock (chat)
 								{
 									vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);

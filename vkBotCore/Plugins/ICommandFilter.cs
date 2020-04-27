@@ -1,3 +1,5 @@
+using VkBotCore.Subjects;
+
 namespace VkBotCore.Plugins
 {
 	public interface ICommandFilter

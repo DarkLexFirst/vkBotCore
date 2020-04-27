@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VkNet.Model.Keyboard;
 using VkNet.Enums.SafetyEnums;
+using VkBotCore.Subjects;
 
 namespace VkBotCore.UI
 {
@@ -19,14 +20,14 @@ namespace VkBotCore.UI
 		/// <summary>
 		/// Событие, вызываемое после нажатия кнопки.
 		/// </summary>
-		public Action<Chat, User> Action { get; private set; }
+		public Action<BaseChat, User> Action { get; private set; }
 
 		/// <summary>
 		/// Цвет кнопки.
 		/// </summary>
 		public ButtonColor Color { get; set; } = ButtonColor.White;
 
-		public KeyboardTextButton(string label, Action<Chat, User> action)
+		public KeyboardTextButton(string label, Action<BaseChat, User> action)
 		{
 			Label = label;
 			Action = action;

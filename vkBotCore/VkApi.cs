@@ -3,8 +3,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using VkBotCore.Configuration;
+using VkBotCore.Subjects;
 using VkNet;
-using VkNet.Model;
+using ApiAuthParams = VkNet.Model.ApiAuthParams;
 
 namespace VkBotCore
 {
@@ -65,8 +66,8 @@ namespace VkBotCore
 		/// </summary>
 		public long GroupId { get; private set; }
 
-		internal ConcurrentDictionary<long, Chat> _chatsCache { get; set; }
-		internal ConcurrentDictionary<long, User> _usersCache { get; set; }
+		internal ConcurrentDictionary<long, BaseChat> _chatsCache { get; set; }
+		internal ConcurrentDictionary<long, IUser> _usersCache { get; set; }
 
 		/// <summary>
 		/// Обработчик сообщений.
@@ -87,20 +88,22 @@ namespace VkBotCore
 			MessageHandler = new MessageHandler(this);
 			AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
 
-			_chatsCache = new ConcurrentDictionary<long, Chat>();
-			_usersCache = new ConcurrentDictionary<long, User>();
+			_chatsCache = new ConcurrentDictionary<long, BaseChat>();
+			_usersCache = new ConcurrentDictionary<long, IUser>();
 		}
 
 		/// <summary>
 		/// Перопределение создания чатов.
 		/// </summary>
-		public Func<VkCoreApiBase, long, Chat> GetNewChat { get; set; }
+		public Func<VkCoreApiBase, long, BaseChat> GetNewChat { get; set; }
 
-		public Chat GetChat(long peerId)
+		public T GetChat<T>(long peerId) where T : BaseChat => (T)GetChat(peerId);
+
+		public BaseChat GetChat(long peerId)
 		{
 			return _chatsCache.GetOrAdd(peerId, _peerId =>
 			{
-				Chat chat = GetNewChat?.Invoke(this, _peerId) ?? new Chat(this, _peerId);
+				BaseChat chat = GetNewChat?.Invoke(this, _peerId) ?? (BaseChat.IsUserConversation(_peerId) ? (BaseChat)new Conversation(this, _peerId) : new Chat(this, _peerId));
 				Core.VkApi.OnChatCreated(new ChatEventArgs(chat));
 				if (Core.VkApi != this)
 					OnChatCreated(new ChatEventArgs(chat));
@@ -121,13 +124,16 @@ namespace VkBotCore
 		/// <summary>
 		/// Перопределение создания пользователей.
 		/// </summary>
-		public Func<VkCoreApiBase, long, User> GetNewUser { get; set; }
+		public Func<VkCoreApiBase, long, IUser> GetNewUser { get; set; }
 
-		public User GetUser(long id)
+
+		public T GetUser<T>(long id) where T : IUser => (T)GetUser(id);
+
+		public IUser GetUser(long id)
 		{
 			return _usersCache.GetOrAdd(id, _id =>
 			{
-				User user = GetNewUser?.Invoke(this, _id) ?? new User(this, _id);
+				IUser user = GetNewUser?.Invoke(this, _id) ?? (_id < 0 ? (IUser)new Group(this, _id) : new User(this, _id));
 				//Core.VkApi.OnUserCreated(new UserEventArgs(user));
 				//if (Core.VkApi != this)
 				//    OnUserCreated(new UserEventArgs(user));

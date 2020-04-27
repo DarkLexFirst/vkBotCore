@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VkBotCore.UI;
-using VkNet.Model;
+using Message = VkNet.Model.Message;
 
-namespace VkBotCore
+namespace VkBotCore.Subjects
 {
 	/// <summary>
-	/// Класс для взаимодействия с диалогом и пользователями в нём
+	/// Базовый класс для взаимодействия с диалогом и пользователями в нём.
 	/// </summary>
-	public class Chat : IEquatable<Chat>
+	public abstract class BaseChat : IEquatable<BaseChat>
 	{
 		/// <summary>
 		/// VkApi обработчик управляющего сообщества.
@@ -18,92 +18,40 @@ namespace VkBotCore
 		public VkCoreApiBase VkApi { get; set; }
 
 		/// <summary>
-		/// Идентификатор диалога
+		/// Идентификатор диалога.
 		/// </summary>
 		public long PeerId { get; set; }
 
 		/// <summary>
-		/// Определяет, является ли данный диалог личой перепиской пользователя с сообществом.
+		/// Определяет, является ли данный диалог личной перепиской пользователя с сообществом.
 		/// </summary>
-		public bool IsUserConversation { get => PeerId < 2000000000; }
+		public bool IsConversation { get => IsUserConversation(PeerId); }
 
-		private Dictionary<string, Keyboard> _cachedKeyboards { get; set; }
+		/// <summary>
+		/// Определяет, является ли данный диалог личной перепиской пользователя с сообществом.
+		/// </summary>
+		public static bool IsUserConversation(long peerId) => peerId < 2000000000;
+
+
+		private Dictionary<string, Keyboard> _cachedKeyboards;
 
 		public Keyboard BaseKeyboard { get; set; }
 
-		public Chat(VkCoreApiBase vkApi, long peerId)
+		public BaseChat(VkCoreApiBase vkApi, long peerId)
 		{
 			VkApi = vkApi;
 			PeerId = peerId;
 			_cachedKeyboards = new Dictionary<string, Keyboard>();
 		}
 
-		protected internal virtual void OnMessasge(User user, string message, Message messageData)
+		protected internal virtual void OnMessasge(IUser sender, string message, Message messageData)
 		{
 
 		}
 
-		protected internal virtual void OnCommand(User user, string command, string[] args, Message messageData)
+		protected internal virtual void OnCommand(User sender, string command, string[] args, Message messageData)
 		{
 
-		}
-
-		protected internal virtual void OnJoin(User addedBy)
-		{
-
-		}
-
-		protected internal virtual void OnKick(User kickedBy)
-		{
-
-		}
-
-		protected internal virtual void OnAddUser(User user, User addedBy, bool joinByLink)
-		{
-
-		}
-
-		protected internal virtual void OnKickUser(User user, User kickedBy)
-		{
-
-		}
-
-		public void Pin(long messageId)
-		{
-			VkApi.Messages.Pin(PeerId, (ulong)messageId);
-		}
-
-		/// <summary>
-		/// Открепляет сообщение.
-		/// </summary>
-		public void Unpin()
-		{
-			VkApi.Messages.Unpin(PeerId);
-		}
-
-		/// <summary>
-		/// Исключает пользователя из диалога.
-		/// </summary>
-		public bool TryKick(User user)
-		{
-			return TryKick(user.Id);
-		}
-
-		/// <summary>
-		/// Исключает пользователя из диалога по его идентификатору.
-		/// </summary>
-		public bool TryKick(long id)
-		{
-			try { Kick(id); } catch { return false; }
-			return true;
-		}
-
-		/// <summary>
-		/// Исключает пользователя из диалога по его идентификатору.
-		/// </summary>
-		public void Kick(long id)
-		{
-			VkApi.Messages.RemoveChatUser((ulong)PeerId % 2000000000, id);
 		}
 
 		/// <summary>
@@ -243,89 +191,17 @@ namespace VkBotCore
 			return VkApi.MessageHandler.DeleteMessage(id);
 		}
 
-		/// <summary>
-		/// Проверяет наличие разрешений у управляющего сообщества.
-		/// </summary>
-		public bool HavePermissions()
-		{
-			try
-			{
-				return GetAllChatAdministrators().Contains(-VkApi.GroupId);
-			}
-			catch
-			{
-				return false;
-			}
-		}
-
-		/// <summary>
-		/// Возвращает идентификаторы администраторов диалога.
-		/// </summary>
-		public long[] GetAllChatAdministrators()
-		{
-			try
-			{
-				var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
-				return members.Where(m => m.IsAdmin).Select(m => m.MemberId).ToArray();
-			}
-			catch
-			{
-				return new long[0];
-			}
-		}
-
-		/// <summary>
-		/// Возвращает идентификаторы всех участников диалога.
-		/// </summary>
-		public long[] GetAllChatMembers()
-		{
-			try
-			{
-				var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Profiles;
-				return members.Select(m => m.Id).ToArray();
-			}
-			catch
-			{
-				return new long[0];
-			}
-		}
-
-		public string GetEveryoneMentionLine(string val = "&#8203;")
-		{
-			return GetMentionLine(GetAllChatMembers(), val);
-		}
-
-		public IEnumerable<string> GetEveryoneMentions(string val = "&#8203;")
-		{
-			return GetMentions(GetAllChatMembers(), val);
-		}
-
-		public static string GetMentionLine(IEnumerable<long> users, string val = "&#8203;")
-		{
-			return string.Join("", GetMentions(users, val));
-		}
-
-		public static IEnumerable<string> GetMentions(IEnumerable<long> users, string val = "&#8203;")
-		{
-			return users.Select(m => User.GetMentionLine(m, val));
-		}
-
-		public static IEnumerable<string> GetMentions(IEnumerable<User> users)
-		{
-			return users.Select(u => u.GetMentionLine());
-		}
-
-		public override bool Equals(object obj) => obj is Chat user && Equals(user);
-		public bool Equals(Chat other) => other.PeerId == PeerId && other.VkApi.Equals(VkApi);
+		public override bool Equals(object obj) => obj is BaseChat chat && Equals(chat);
+		public bool Equals(BaseChat other) => other.PeerId == PeerId && other.VkApi.Equals(VkApi);
 
 		public override int GetHashCode() => (int)PeerId;
 	}
 
 	public class ChatEventArgs : EventArgs
 	{
-		public Chat Chat { get; }
+		public BaseChat Chat { get; }
 
-		public ChatEventArgs(Chat chat)
+		public ChatEventArgs(BaseChat chat)
 		{
 			Chat = chat;
 		}

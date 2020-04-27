@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using VkNet.Model;
+﻿using VkBotCore.Subjects;
+using Message = VkNet.Model.Message;
 
 namespace VkBotCore.Plugins
 {
@@ -10,10 +7,10 @@ namespace VkBotCore.Plugins
 	{
 		public BotCore Core { get; set; }
 		public User Sender { get; set; }
-		public Chat Chat { get; set; }
+		public BaseChat Chat { get; set; }
 		public Message MessageData { get; set; }
 
-		public CommandContext(BotCore core, User sender, Chat chat, Message messageData)
+		public CommandContext(BotCore core, User sender, BaseChat chat, Message messageData)
 		{
 			Core = core;
 			Sender = sender;

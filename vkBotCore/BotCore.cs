@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using VkBotCore.Plugins;
 using VkBotCore.Plugins.Attributes;
+using VkBotCore.Subjects;
 
 namespace VkBotCore
 {
@@ -64,7 +65,8 @@ namespace VkBotCore
 			foreach (var api in VkApi._vkApi)
 			{
 				foreach (var user in api.Value._usersCache)
-					user.Value.Storage.Save(forced);
+					if (user.Value is User u)
+						u.Storage.Save(forced);
 			}
 		}
 

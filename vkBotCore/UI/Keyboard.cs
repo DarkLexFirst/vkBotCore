@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VkBotCore.Subjects;
 using VkNet.Model.Keyboard;
 
 namespace VkBotCore.UI
@@ -80,7 +81,7 @@ namespace VkBotCore.UI
 			return keyboard;
 		}
 
-		internal void TryInvokeButton(Chat chat, User user, string buttonId)
+		internal void TryInvokeButton(BaseChat chat, User user, string buttonId)
 		{
 			if (buttonId == null) return;
 			foreach (var line in _buttons)

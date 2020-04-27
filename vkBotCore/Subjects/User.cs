@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using VkBotCore.Configuration;
 using VkNet.Model;
 
-namespace VkBotCore
+namespace VkBotCore.Subjects
 {
-	public class User : IEquatable<User>
+	public class User : IUser, IEquatable<User>
 	{
 		/// <summary>
 		/// VkApi обработчик управляющего сообщества.
@@ -66,7 +66,12 @@ namespace VkBotCore
 		/// <summary>
 		/// Возвращает личную переписку сообщества с данным пользователем.
 		/// </summary>
-		public Chat GetConversation() => VkApi.GetChat(Id);
+		public BaseChat GetConversation() => GetConversation<BaseChat>();
+
+		/// <summary>
+		/// Возвращает личную переписку сообщества с данным пользователем.
+		/// </summary>
+		public T GetConversation<T>() where T : BaseChat => VkApi.GetChat<T>(Id);
 
 		/// <summary>
 		/// Возвращает строку упоминания.

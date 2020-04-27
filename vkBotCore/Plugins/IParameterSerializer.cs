@@ -1,4 +1,6 @@
-﻿namespace VkBotCore.Plugins
+﻿using VkBotCore.Subjects;
+
+namespace VkBotCore.Plugins
 {
 	public interface IParameterSerializer
 	{

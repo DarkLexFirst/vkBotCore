@@ -11,11 +11,12 @@ using VkBotCore.Plugins.Attributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
-using VkNet.Model;
+using Microsoft.Extensions.Configuration;
 using VkBotCore.Plugins.Commands;
 using VkBotCore.Callback;
-using Microsoft.Extensions.Configuration;
 using VkBotCore.Configuration;
+using VkBotCore.Subjects;
+using Message = VkNet.Model.Message;
 
 namespace VkBotCore.Plugins
 {
@@ -344,7 +345,7 @@ namespace VkBotCore.Plugins
 			}
 		}
 
-		public object HandleCommand(User user, Chat chat, string cmdline, Message messageData)
+		public object HandleCommand(User user, BaseChat chat, string cmdline, Message messageData)
 		{
 			var split = Regex.Split(cmdline, "(?<=^[^\"]*(?:\"[^\"]*\"[^\"]*)*) (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 			string commandName = split[0].Trim('/').Trim('.').ToLower();
@@ -449,7 +450,7 @@ namespace VkBotCore.Plugins
 			return Attribute.IsDefined(param, typeof(ParamArrayAttribute));
 		}
 
-		private bool ExecuteCommand(MethodInfo method, User user, Chat chat, string[] args, Message messageData, out object result)
+		private bool ExecuteCommand(MethodInfo method, User user, BaseChat chat, string[] args, Message messageData, out object result)
 		{
 			Core.Log.Info($"Execute command {method}");
 
@@ -512,12 +513,14 @@ namespace VkBotCore.Plugins
 						continue;
 					}
 
-					if (parameter.ParameterType == typeof(User))
+					//mention groups unsupported.
+					if (typeof(IUser).IsAssignableFrom(parameter.ParameterType))
 					{
 						long id;
 						string _id = args[i++].Split(' ', '|').First();
 						if (_id.Length < 4 || !long.TryParse(_id.Substring(3), out id)) return false;
-						objectArgs[k] = user.VkApi.GetUser(id);
+						var _user = user.VkApi.GetUser(id);
+						objectArgs[k] = parameter.ParameterType.IsAssignableFrom(_user.GetType()) ? _user : null;
 						continue;
 					}
 

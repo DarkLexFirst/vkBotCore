@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 
-namespace VkBotCore
+namespace VkBotCore.Subjects
 {
 	public class LogChat : Chat
 	{
@@ -17,22 +17,22 @@ namespace VkBotCore
 			MaxValue = Enum.Parse<LogValueType>(VkApi.Core.Configuration["Config:Log:MaxValue"]);
 		}
 
-		public void Debug(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.DEBUG, args);
+		public void Debug(BaseChat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.DEBUG, args);
 		public void Debug(string message, params object[] args) => SendMessage(message, LogValueType.DEBUG, args);
 
-		public void Info(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.INFO, args);
+		public void Info(BaseChat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.INFO, args);
 		public void Info(string message, params object[] args) => SendMessage(message, LogValueType.INFO, args);
 
-		public void Warn(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.WARN, args);
+		public void Warn(BaseChat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.WARN, args);
 		public void Warn(string message, params object[] args) => SendMessage(message, LogValueType.WARN, args);
 
-		public void Error(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.ERROR, args);
+		public void Error(BaseChat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.ERROR, args);
 		public void Error(string message, params object[] args) => SendMessage(message, LogValueType.ERROR, args);
 
-		public void Fatal(Chat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.FATAL, args);
+		public void Fatal(BaseChat chat, string message, params object[] args) => SendMessage(chat, message, LogValueType.FATAL, args);
 		public void Fatal(string message, params object[] args) => SendMessage(message, LogValueType.FATAL, args);
 
-		private void SendMessage(Chat chat, string message, LogValueType value, params object[] args)
+		private void SendMessage(BaseChat chat, string message, LogValueType value, params object[] args)
 		{
 			if (MinValue <= value && MaxValue >= value)
 				SendMessage(string.Format(TypeFormat_Chat, value, chat.PeerId, string.Format(message, args)));

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using VkBotCore.Plugins.Attributes;
+using VkBotCore.Subjects;
 
 namespace VkBotCore.Plugins.Commands
 {
@@ -111,22 +112,25 @@ namespace VkBotCore.Plugins.Commands
 		[Command(IsHidden = true)]
 		private static void Everyone(CommandContext context, params string[] message)
 		{
-			bool baseCommandsAllowed = context.Core.Configuration.GetValue("Config:Plugins:BaseCommandsAllowed", false);
-			if (context.Sender.IsAdmin || (baseCommandsAllowed && context.Sender.IsChatAdmin(context.Chat)))
+			if (context.Chat is Chat chat)
 			{
-				var mentions = context.Chat.GetEveryoneMentions();
-				int k = 100;
-				for (var i = 0; i < mentions.Count(); i += k)
-					context.Chat.SendMessageAsync($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
+				bool baseCommandsAllowed = context.Core.Configuration.GetValue("Config:Plugins:BaseCommandsAllowed", false);
+				if (context.Sender.IsAdmin || (baseCommandsAllowed && context.Sender.IsChatAdmin(chat)))
+				{
+					var mentions = chat.GetEveryoneMentions();
+					int k = 100;
+					for (var i = 0; i < mentions.Count(); i += k)
+						context.Chat.SendMessageAsync($"{string.Join(" ", message)}{string.Join("", mentions.Skip(i).Take(k))}");
+				}
 			}
 		}
+
 		[Command(IsHidden = true)]
-		private static void test(CommandContext context, int lim = 10)
+		private static void test(CommandContext context)
 		{
 			if (context.Sender.IsAdmin)
 			{
-				for (var i = 0; i < lim; i++)
-					context.Chat.SendMessageWithPool(i);
+				context.Chat.SendMessage(context.Chat.VkApi.Groups.GetById(null, "managercrpe", null).First().Name);
 			}
 		}
 	}
