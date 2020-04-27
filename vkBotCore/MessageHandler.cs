@@ -31,19 +31,22 @@ namespace VkBotCore
 		public virtual void OnMessage(IUser sender, string message, BaseChat chat, Message messageData)
 		{
 			//защита от дублированных или задержанных сообщений
-			if ((DateTime.UtcNow - messageData.Date.Value).TotalSeconds > _messageResendBlockTime) return;
+			if (messageData.Date.HasValue && (DateTime.UtcNow - messageData.Date.Value).TotalSeconds > _messageResendBlockTime) return;
 
-			var msgId = messageData.ConversationMessageId.Value;
-			if (!_lastMessages.ContainsKey(chat))
-				_lastMessages.Add(chat, new Queue<long>());
-			else
+			if (messageData.ConversationMessageId.HasValue)
 			{
-				if (_lastMessages[chat].Contains(msgId)) return;
-				_lastMessages[chat].Enqueue(msgId);
-				if (_lastMessages[chat].Count > 10)
-					_lastMessages[chat].Dequeue();
+				long msgId = messageData.ConversationMessageId.Value;
+				if (!_lastMessages.ContainsKey(chat))
+					_lastMessages.Add(chat, new Queue<long>());
+				else
+				{
+					if (_lastMessages[chat].Contains(msgId)) return;
+					_lastMessages[chat].Enqueue(msgId);
+					if (_lastMessages[chat].Count > 10)
+						_lastMessages[chat].Dequeue();
+				}
+				//защита от дублированных или задержанных сообщений
 			}
-			//защита от дублированных или задержанных сообщений
 
 
 			//actions
@@ -53,24 +56,33 @@ namespace VkBotCore
 				{
 					if (messageData.Action.Type == MessageAction.ChatKickUser)
 					{
-						//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
-						//	_chat.OnKick(sender);
-						//else
+						if (messageData.Action.MemberId.HasValue)
+						{
+							//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
+							//	_chat.OnKick(sender);
+							//else
 							_chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender);
-						return;
+							return;
+						}
 					}
 					else if (messageData.Action.Type == MessageAction.ChatInviteUser)
 					{
-						if (messageData.Action.MemberId == -VkApi.GroupId)
-							_chat.OnJoin(sender);
-						else
-							_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
-						return;
+						if (messageData.Action.MemberId.HasValue)
+						{
+							if (messageData.Action.MemberId == -VkApi.GroupId)
+								_chat.OnJoin(sender);
+							else
+								_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
+							return;
+						}
 					}
 					else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
 					{
-						_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), null, true);
-						return;
+						if (messageData.Action.MemberId.HasValue)
+						{
+							_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), null, true);
+							return;
+						}
 					}
 				}
 			}

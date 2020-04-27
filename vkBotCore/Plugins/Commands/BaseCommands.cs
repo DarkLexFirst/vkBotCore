@@ -124,14 +124,5 @@ namespace VkBotCore.Plugins.Commands
 				}
 			}
 		}
-
-		[Command(IsHidden = true)]
-		private static void test(CommandContext context)
-		{
-			if (context.Sender.IsAdmin)
-			{
-				context.Chat.SendMessage(context.Chat.VkApi.Groups.GetById(null, "managercrpe", null).First().Name);
-			}
-		}
 	}
 }
