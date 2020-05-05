@@ -581,7 +581,8 @@ namespace VkBotCore.Plugins
 					if (parameter.ParameterType.IsEnum)
 					{
 						string val = args[i++];
-						if (!Enum.TryParse(parameter.ParameterType, val, true, out object value) || value as Enum == null)
+						
+						if (long.TryParse(val, out _) || !Enum.TryParse(parameter.ParameterType, val, true, out object value) || value as Enum == null)
 						{
 							Core.Log.Warn($"Could not convert to valid enum value: {val}");
 							return false;

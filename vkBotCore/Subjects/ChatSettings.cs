@@ -19,44 +19,21 @@ namespace VkBotCore.Subjects
 
 		public T Get<T>(string settingName, T defaultValue) where T : struct
 		{
-			var val = Chat.Storage._settings[settingName];
-			if (val == null) return defaultValue;
-			return (T) val;
-		}
-
-		public T[] Get<T>(string settingName, T[] defaultValue) where T : struct
-		{
-			var val = Chat.Storage._settings[settingName];
-			if (val == null) return defaultValue;
-			return (T[]) val;
+			T? val = Chat.Storage._settings.GetValue<T>(settingName);
+			return val == null ? defaultValue : val.Value;
 		}
 
 		public string Get(string settingName, string defaultValue)
 		{
-			return (string) Chat.Storage._settings[settingName] ?? defaultValue;
-		}
-
-		public string[] Get(string settingName, string[] defaultValue)
-		{
-			return (string[]) Chat.Storage._settings[settingName] ?? defaultValue;
+			return Chat.Storage._settings[settingName] ?? defaultValue;
 		}
 
 		public void Set<T>(string settingName, T value) where T : struct
 		{
-			Chat.Storage._settings[settingName] = value;
-		}
-
-		public void Set<T>(string settingName, T[] value) where T : struct
-		{
-			Chat.Storage._settings[settingName] = value;
+			Chat.Storage._settings.SetValue(settingName, value);
 		}
 
 		public void Set(string settingName, string value)
-		{
-			Chat.Storage._settings[settingName] = value;
-		}
-
-		public void Set(string settingName, string[] value)
 		{
 			Chat.Storage._settings[settingName] = value;
 		}

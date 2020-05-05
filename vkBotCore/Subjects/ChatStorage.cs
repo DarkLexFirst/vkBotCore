@@ -17,9 +17,6 @@ namespace VkBotCore.Subjects
 		[JsonIgnore]
 		private string _cache;
 
-		[JsonProperty("UserData")]
-		private object _userDataCache;
-
 		[JsonProperty("Settings")]
 		internal VariableSet _settings = new VariableSet();
 
@@ -30,15 +27,6 @@ namespace VkBotCore.Subjects
 
 		private DateTime _lastSaveTime = DateTime.Now;
 		private TimeSpan _timeToSave = new TimeSpan(0, 5, 0);
-
-		public T GetUserData<T>()
-		{
-			return (T) _userDataCache;
-		}
-		public void SetUserData<T>(T data)
-		{
-			_userDataCache = data;
-		}
 
 		private static string GetDirectoryPath(Chat chat)
 		{
@@ -125,9 +113,9 @@ namespace VkBotCore.Subjects
 		public VariableSet this[IUser user] { get => this[user.Id]; }
 	}
 
-	public class VariableSet : Dictionary<string, object>
+	public class VariableSet : Dictionary<string, string>
 	{
-		public new object this[string key]
+		public new string this[string key]
 		{
 			get => ContainsKey(key) ? base[key] : null;
 			set
@@ -142,6 +130,41 @@ namespace VkBotCore.Subjects
 			}
 		}
 
-		public T Get<T>(string key) => (T) this[key];
+		public T? GetValue<T>(string key) where T : struct
+		{
+			var value = this[key];
+			if (value == null) return null;
+			if (typeof(Enum).IsAssignableFrom(typeof(T)))
+				return Enum.Parse(typeof(T), value) as T?;
+			return Convert.ChangeType(value, typeof(T)) as T?;
+		}
+		public void SetValue<T>(string key, T value) where T : struct
+		{
+			this[key] = value.ToString();
+		}
+
+		public T Get<T>(string key) where T : class
+		{
+			var settings = new JsonSerializerSettings();
+			settings.NullValueHandling = NullValueHandling.Ignore;
+			settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+			settings.MissingMemberHandling = MissingMemberHandling.Error;
+			settings.Formatting = Formatting.Indented;
+
+			var value = this[key];
+			if (value == null) return null;
+			return JsonConvert.DeserializeObject<T>(value, settings);
+		}
+
+		public void Set<T>(string key, T value) where T : class
+		{
+			var settings = new JsonSerializerSettings();
+			settings.NullValueHandling = NullValueHandling.Ignore;
+			settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
+			settings.MissingMemberHandling = MissingMemberHandling.Error;
+			settings.Formatting = Formatting.Indented;
+
+			this[key] = JsonConvert.SerializeObject(value, settings);
+		}
 	}
 }
