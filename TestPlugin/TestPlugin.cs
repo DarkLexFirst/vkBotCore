@@ -99,6 +99,7 @@ namespace TestPlugin
             return updates;
         }
 
+		//клавиатуры
         [Command(IsHidden = true)]
         private static void UITest1(CommandContext context)
         {
@@ -155,6 +156,7 @@ namespace TestPlugin
             }
         }
 
+		//удалённое хранилище игрока
         [Command(IsHidden = true)]
         private static void StorageSet(CommandContext context, string dataTag, string data, bool forced = false)
         {
@@ -201,6 +203,67 @@ namespace TestPlugin
 			{
 				for (var i = 0; i < 10; i++)
 					context.Chat.SendMessageWithPool(i);
+			}
+		}
+
+		//хранилище чата
+		[Command(IsHidden = true)]
+		private static void SetСStorage(CommandContext context, string key, string val = null)
+		{
+			if (context.Chat is Chat chat)
+			{
+				if (context.Sender.IsAdmin)
+				{
+					chat.Storage.Variables[key] = val;
+				}
+			}
+		}
+
+		[Command(IsHidden = true)]
+		private static void GetСStorage(CommandContext context, string key)
+		{
+			if (context.Chat is Chat chat)
+			{
+				if (context.Sender.IsAdmin)
+				{
+					chat.SendMessage($"{key} = {chat.Storage.Variables[key]}");
+				}
+			}
+		}
+
+		[Command(IsHidden = true)]
+		private static void SetUСStorage(CommandContext context, IUser user, string key, string val = null)
+		{
+			if (context.Chat is Chat chat)
+			{
+				if (context.Sender.IsAdmin)
+				{
+					chat.Storage.UsersStorage[user][key] = val;
+				}
+			}
+		}
+
+		[Command(IsHidden = true)]
+		private static void GetUСStorage(CommandContext context, IUser user, string key)
+		{
+			if (context.Chat is Chat chat)
+			{
+				if (context.Sender.IsAdmin)
+				{
+					chat.SendMessage($"{key} = {chat.Storage.UsersStorage[user][key]}");
+				}
+			}
+		}
+
+		[Command(IsHidden = true)]
+		private static void SaveСStorage(CommandContext context)
+		{
+			if (context.Chat is Chat chat)
+			{
+				if (context.Sender.IsAdmin)
+				{
+					chat.Storage.Save(true);
+				}
 			}
 		}
 	}

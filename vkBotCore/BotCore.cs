@@ -67,6 +67,9 @@ namespace VkBotCore
 				foreach (var user in api.Value._usersCache)
 					if (user.Value is User u)
 						u.Storage.Save(forced);
+				foreach (var chat in api.Value._chatsCache)
+					if (chat.Value is Chat c)
+						c.Storage.Save(forced);
 			}
 		}
 

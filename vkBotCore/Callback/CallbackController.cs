@@ -30,6 +30,7 @@ namespace VkBotCore.Callback
 			}
 		}
 
+		private long _messageResendBlockTime = 10;
 		public IActionResult Callback([FromBody]Updates updates)
 		{
 			try
@@ -55,6 +56,7 @@ namespace VkBotCore.Callback
 							case CallbackReceive.Message.New:
 							{
 								var msg = Message.FromJson(new VkResponse(updates.Object));
+								if (msg.Date.HasValue && (DateTime.UtcNow - msg.Date.Value).TotalSeconds > _messageResendBlockTime) return;
 
 								IUser user = vkApi.GetUser(msg.FromId.Value);
 								BaseChat chat = vkApi.GetChat(msg.PeerId.Value);

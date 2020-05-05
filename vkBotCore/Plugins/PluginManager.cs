@@ -496,7 +496,7 @@ namespace VkBotCore.Plugins
 						continue;
 					}
 
-					if (args.Length < k)
+					if (args.Length < k && !isStringParam)
 					{
 						Core.Log.Debug(chat, $"No math {k} arguments");
 						return false;

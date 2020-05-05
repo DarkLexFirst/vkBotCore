@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace VkBotCore.Subjects
 {
-	public class Storage : IEquatable<Storage>
+	public class Storage
 	{
 		/// <summary>
 		/// Пользователь, к которому привязано данное хранилище.
@@ -131,10 +131,5 @@ namespace VkBotCore.Subjects
 
 			_lastSaveTime = DateTime.Now;
 		}
-
-		public override bool Equals(object obj) => obj is Storage storage && Equals(storage);
-		public bool Equals(Storage other) => User.Equals(other.User);
-
-		public override int GetHashCode() => User.GetHashCode();
 	}
 }

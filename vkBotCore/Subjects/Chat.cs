@@ -13,11 +13,27 @@ namespace VkBotCore.Subjects
 	/// </summary>
 	public class Chat : BaseChat
 	{
-		private string _inviteLinkCache { get; set; }
+		private ChatStorage _storage;
+
+		/// <summary>
+		/// Хранилище.
+		/// </summary>
+		public ChatStorage Storage { get {
+				if (_storage == null)
+					_storage = ChatStorage.ReadFromJson(this);
+				return _storage;
+			}
+		}
+
+		/// <summary>
+		/// Настройки.
+		/// </summary>
+		public ChatSettings Settings { get; private set; }
+
 
 		public Chat(VkCoreApiBase vkApi, long peerId) : base(vkApi, peerId)
 		{
-
+			Settings = new ChatSettings(this);
 		}
 
 		protected internal virtual void OnJoin(IUser addedBy)
@@ -83,7 +99,7 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public void Leave()
 		{
-			VkApi.Messages.RemoveChatUser((ulong)PeerId % BasePeerId, VkApi.GroupId);
+			VkApi.Messages.RemoveChatUser((ulong)PeerId % BasePeerId, -VkApi.GroupId);
 		}
 
 		/// <summary>
@@ -100,6 +116,8 @@ namespace VkBotCore.Subjects
 				return false;
 			}
 		}
+
+		private string _inviteLinkCache;
 
 		/// <summary>
 		/// Возвращает ссылку для приглашения пользователя в беседу.
