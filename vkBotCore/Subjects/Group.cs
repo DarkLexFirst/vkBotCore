@@ -26,6 +26,8 @@ namespace VkBotCore.Subjects
 		{
 			VkApi = vkApi;
 			Id = id;
+			var g = GetApiGroup();
+			Name = g.Name;
 		}
 
 		/// <summary>
@@ -49,7 +51,7 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public static string GetMentionLine(long id, string value)
 		{
-			return id >= 0 ? $"[id{id}|{value ?? id.ToString()}]" : string.Empty;
+			return id >= 0 ? $"[club{id}|{value ?? id.ToString()}]" : string.Empty;
 		}
 
 		public VkNet.Model.Group GetApiGroup()
@@ -59,15 +61,13 @@ namespace VkBotCore.Subjects
 
 		public static VkNet.Model.Group GetApiGroupById(VkCoreApiBase vkApi, long id)
 		{
-			if (id <= 0) return null;
-			return vkApi.Groups.GetById(null, Math.Abs(-id).ToString(), null).First();
+			return vkApi.Groups.GetById(null, $"club{Math.Abs(-id)}", null).First();
 		}
 
 		public static async Task<VkNet.Model.Group> GetApiGroupByIdAsync(VkCoreApiBase vkApi, long id)
 		{
-			if (id <= 0) return null;
 			IReadOnlyCollection<VkNet.Model.Group> groups;
-			groups = await vkApi.Groups.GetByIdAsync(null, Math.Abs(-id).ToString(), null);
+			groups = await vkApi.Groups.GetByIdAsync(null, $"club{Math.Abs(-id)}", null);
 			return groups.First();
 		}
 

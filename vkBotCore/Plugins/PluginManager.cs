@@ -513,14 +513,15 @@ namespace VkBotCore.Plugins
 						continue;
 					}
 
-					//mention groups unsupported.
 					if (typeof(IUser).IsAssignableFrom(parameter.ParameterType))
 					{
 						long id;
-						string _id = args[i++].Split(' ', '|').First();
-						if (_id.Length < 4 || !long.TryParse(_id.Substring(3), out id)) return false;
+						string _id = Regex.Match(args[i++].Split(' ', '|').First(), @"(club|public|id)[0-9]*").Value;
+						_id = Regex.Replace(_id.Replace("id", ""), @"(club|public)", "-");
+						if (!long.TryParse(_id, out id)) return false;
 						var _user = user.VkApi.GetUser(id);
-						objectArgs[k] = parameter.ParameterType.IsAssignableFrom(_user.GetType()) ? _user : null;
+						if (!parameter.ParameterType.IsAssignableFrom(_user.GetType()) && !_user.GetType().IsAssignableFrom(parameter.ParameterType)) return false;
+						objectArgs[k] = _user;
 						continue;
 					}
 

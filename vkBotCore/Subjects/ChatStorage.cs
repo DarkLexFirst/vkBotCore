@@ -126,6 +126,8 @@ namespace VkBotCore.Subjects
 	{
 		private Dictionary<string, object> _objectsCache { get; set; } = new Dictionary<string, object>();
 
+		public new int Count { get => Math.Max(base.Count, _objectsCache.Count); }
+
 		public new string this[string key]
 		{
 			get => ContainsKey(key) ? base[key] : null;
