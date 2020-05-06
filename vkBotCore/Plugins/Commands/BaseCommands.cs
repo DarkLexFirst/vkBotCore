@@ -99,7 +99,7 @@ namespace VkBotCore.Plugins.Commands
 				List<string> _values = new List<string>();
 				foreach (var val in Enum.GetValues(parameter.ParameterType))
 					_values.Add(val.ToString());
-				var values = useFullDescription ? string.Join("|", _values) : _values.First();
+				var values = useFullDescription ? string.Join("|", _values) : parameter.Name;
 				if (Attribute.GetCustomAttribute(parameter, typeof(SubCommand), false) as SubCommand != null)
 					return values;
 				else

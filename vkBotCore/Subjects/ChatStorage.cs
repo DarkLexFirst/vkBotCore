@@ -72,6 +72,9 @@ namespace VkBotCore.Subjects
 			settings.MissingMemberHandling = MissingMemberHandling.Error;
 			settings.Formatting = Formatting.Indented;
 
+			storage.Variables.SerializeAllCache();
+			storage.UsersStorage.SerializeAllCache();
+
 			string path = GetFullFilePath(storage.Chat);
 			string json = JsonConvert.SerializeObject(storage, settings);
 
@@ -111,10 +114,18 @@ namespace VkBotCore.Subjects
 		}
 
 		public VariableSet this[IUser user] { get => this[user.Id]; }
+
+		internal void SerializeAllCache()
+		{
+			foreach (var set in this)
+				set.Value.SerializeAllCache();
+		}
 	}
 
 	public class VariableSet : Dictionary<string, string>
 	{
+		private Dictionary<string, object> _objectsCache { get; set; } = new Dictionary<string, object>();
+
 		public new string this[string key]
 		{
 			get => ContainsKey(key) ? base[key] : null;
@@ -123,6 +134,7 @@ namespace VkBotCore.Subjects
 				if(value == null)
 				{
 					Remove(key);
+					_objectsCache.Remove(key);
 					return;
 				}
 				if (!TryAdd(key, value))
@@ -149,22 +161,48 @@ namespace VkBotCore.Subjects
 			settings.NullValueHandling = NullValueHandling.Ignore;
 			settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
 			settings.MissingMemberHandling = MissingMemberHandling.Error;
-			settings.Formatting = Formatting.Indented;
+
+			if (_objectsCache.TryGetValue(key, out object cache))
+			{
+				if (cache is T) return (T)cache;
+			}
 
 			var value = this[key];
 			if (value == null) return null;
-			return JsonConvert.DeserializeObject<T>(value, settings);
+
+			T obj = JsonConvert.DeserializeObject<T>(value, settings);
+			if (!_objectsCache.TryAdd(key, obj))
+				_objectsCache[key] = obj;
+			return obj;
 		}
 
-		public void Set<T>(string key, T value) where T : class
+		public void Set<T>(string key, T value, bool serialize = false) where T : class
+		{
+			if(value == null)
+			{
+				Remove(key);
+				_objectsCache.Remove(key);
+				return;
+			}
+			if (!_objectsCache.TryAdd(key, value))
+				_objectsCache[key] = value;
+			if (serialize) Serialize<T>(key, value);
+		}
+
+		internal void Serialize<T>(string key, T value) where T : class
 		{
 			var settings = new JsonSerializerSettings();
 			settings.NullValueHandling = NullValueHandling.Ignore;
 			settings.DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate;
 			settings.MissingMemberHandling = MissingMemberHandling.Error;
-			settings.Formatting = Formatting.Indented;
 
 			this[key] = JsonConvert.SerializeObject(value, settings);
+		}
+
+		internal void SerializeAllCache()
+		{
+			foreach (var cache in _objectsCache)
+				Serialize(cache.Key, cache.Value);
 		}
 	}
 }
