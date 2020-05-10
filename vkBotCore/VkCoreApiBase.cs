@@ -1,62 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using VkNet;
-using ApiAuthParams = VkNet.Model.ApiAuthParams;
 
 namespace VkBotCore
 {
-	public class VkCoreApi : VkCoreApiBase
-	{
-		internal ConcurrentDictionary<long, VkCoreApiBase> _vkApi { get; private set; }
-
-		public VkCoreApi(BotCore core) : base(core, 0)
-		{
-			_vkApi = new ConcurrentDictionary<long, VkCoreApiBase>();
-
-			var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
-			if (accesToken != null)
-				Authorize(new ApiAuthParams { AccessToken = accesToken });
-
-			LoadAll();
-		}
-
-		public void LoadAll()
-		{
-			foreach (var a in Core.Configuration.GetSection("Config:Groups").GetChildren())
-				Get(long.Parse(a.Key));
-		}
-
-		public VkCoreApiBase Get(long groupId)
-		{
-			if (groupId == GroupId) return this;
-			return _vkApi.GetOrAdd(groupId, _groupId =>
-			{
-				var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
-				if (accesToken == null)
-					return this;
-				var api = new VkCoreApiBase(Core, _groupId);
-				api.Authorize(new ApiAuthParams { AccessToken = accesToken });
-				return api;
-			});
-		}
-
-		public VkCoreApiBase[] GetAvailableApis(string _namespace)
-		{
-			var apis = _vkApi.Values.Where(a => a.AvailableNamespaces.Contains(_namespace));
-			if (AvailableNamespaces.Contains(_namespace))
-			{
-				var _apis = apis.ToList();
-				_apis.Add(this);
-				return _apis.ToArray();
-			}
-			return apis.ToArray();
-		}
-	}
-
 	public class VkCoreApiBase : VkApi
 	{
 		public BotCore Core { get; private set; }
@@ -100,7 +50,7 @@ namespace VkBotCore
 		/// <summary>
 		/// Инициализирует новый диалог.
 		/// </summary>
-		public T GetChat<T>(long peerId) where T : BaseChat => (T)GetChat(peerId);
+		public T GetChat<T>(long peerId) where T : BaseChat => (T) GetChat(peerId);
 
 		/// <summary>
 		/// Инициализирует новый диалог.
@@ -109,7 +59,7 @@ namespace VkBotCore
 		{
 			return _chatsCache.GetOrAdd(peerId, _peerId =>
 			{
-				BaseChat chat = GetNewChat?.Invoke(this, _peerId) ?? (BaseChat.IsUserConversation(_peerId) ? (BaseChat)new Conversation(this, _peerId) : new Chat(this, _peerId));
+				BaseChat chat = GetNewChat?.Invoke(this, _peerId) ?? (BaseChat.IsUserConversation(_peerId) ? (BaseChat) new Conversation(this, _peerId) : new Chat(this, _peerId));
 				Core.VkApi.OnChatCreated(new ChatEventArgs(chat));
 				if (Core.VkApi != this)
 					OnChatCreated(new ChatEventArgs(chat));
@@ -142,28 +92,28 @@ namespace VkBotCore
 		public Func<VkCoreApiBase, long, IUser> GetNewUser { get; set; }
 
 
-		public T GetUser<T>(long id) where T : IUser => (T)GetUser(id);
+		public T GetUser<T>(long id) where T : IUser => (T) GetUser(id);
 
 		public IUser GetUser(long id)
 		{
 			return _usersCache.GetOrAdd(id, _id =>
 			{
-				IUser user = GetNewUser?.Invoke(this, _id) ?? (_id < 0 ? (IUser)new Group(this, _id) : new User(this, _id));
-				//Core.VkApi.OnUserCreated(new UserEventArgs(user));
-				//if (Core.VkApi != this)
-				//    OnUserCreated(new UserEventArgs(user));
+				IUser user = GetNewUser?.Invoke(this, _id) ?? (_id < 0 ? (IUser) new Group(this, _id) : new User(this, _id));
+				Core.VkApi.OnUserCreated(new UserEventArgs(user));
+				if (Core.VkApi != this)
+					OnUserCreated(new UserEventArgs(user));
 				return user;
 			});
 		}
 
-		///// <summary>
-		///// Событие, вызываемое при инициализации пользователя.
-		///// </summary>
-		//public event EventHandler<UserEventArgs> UserCreated;
+		/// <summary>
+		/// Событие, вызываемое при инициализации пользователя.
+		/// </summary>
+		public event EventHandler<UserEventArgs> UserCreated;
 
-		//protected virtual void OnUserCreated(UserEventArgs e)
-		//{
-		//    UserCreated?.Invoke(this, e);
-		//}
+		protected virtual void OnUserCreated(UserEventArgs e)
+		{
+			UserCreated?.Invoke(this, e);
+		}
 	}
 }

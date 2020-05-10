@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -348,18 +348,11 @@ namespace VkBotCore.Plugins
 		public object HandleCommand(User user, BaseChat chat, string cmdline, Message messageData)
 		{
 			var split = Regex.Split(cmdline, "(?<=^[^\"]*(?:\"[^\"]*\"[^\"]*)*) (?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-			string commandName = split[0].Trim('/').Trim('.').ToLower();
+			string commandName = split[0].ToLower();
 			string[] arguments = split.Skip(1).ToArray();
 
 			Command command = null;
 			command = GetCommand(commandName, chat.VkApi.GroupId);
-
-			//if (arguments.Length > 0 && command == null)
-			//{
-			//	commandName = commandName + " " + arguments[0];
-			//	arguments = arguments.Skip(1).ToArray();
-			//	command = GetCommand(commandName);
-			//}
 
 			bool showErrorLine = Core.Configuration.GetValue("Config:Plugins:Commands:ShowErrorLine", true);
 
@@ -626,6 +619,8 @@ namespace VkBotCore.Plugins
 				object pluginInstance = _plugins.FirstOrDefault(plugin => method.DeclaringType.IsInstanceOfType(plugin)) ?? method.DeclaringType;
 				if (pluginInstance == null) return false;
 
+				if(!OnCommandExecute(new CommandEventArgs(chat, user, messageData.Text, method, args, messageData))) return true;
+
 				ICommandFilter filter = pluginInstance as ICommandFilter;
 				if (filter != null)
 				{
@@ -677,6 +672,27 @@ namespace VkBotCore.Plugins
 
 				updates = _method.Invoke(pluginInstance, new object[] { updates, vkApi }) as Updates;
 			}
+		}
+
+		public event EventHandler<CommandEventArgs> CommandExecute;
+
+		protected virtual bool OnCommandExecute(CommandEventArgs e)
+		{
+			CommandExecute?.Invoke(this, e);
+
+			return !e.Cancel;
+		}
+	}
+
+	public class CommandEventArgs : GetMessageEventArgs<User>
+	{
+		public MethodInfo Command { get; set; }
+		public string[] Args { get; set; }
+
+		public CommandEventArgs(BaseChat chat, User sender, string message, MethodInfo command, string[] args, Message messageData) : base(chat, sender, message, messageData)
+		{
+			Command = command;
+			Args = args;
 		}
 	}
 }

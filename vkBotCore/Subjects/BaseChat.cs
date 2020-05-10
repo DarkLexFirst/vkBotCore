@@ -51,11 +51,6 @@ namespace VkBotCore.Subjects
 
 		}
 
-		protected internal virtual void OnCommand(User sender, string command, string[] args, Message messageData)
-		{
-
-		}
-
 		/// <summary>
 		/// Отправляет текстовое сообщение в диалог.
 		/// </summary>

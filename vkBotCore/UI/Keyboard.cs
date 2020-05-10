@@ -96,7 +96,7 @@ namespace VkBotCore.UI
 
 		private static long _lastKeyboardId = 0;
 		private byte _lastButtonId = 0;
-		public string GetButtonId()
+		internal string GetButtonId()
 		{
 			return _lastButtonId++.ToString();
 		}

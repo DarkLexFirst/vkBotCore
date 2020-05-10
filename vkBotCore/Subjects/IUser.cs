@@ -1,4 +1,6 @@
-﻿namespace VkBotCore.Subjects
+﻿using System;
+
+namespace VkBotCore.Subjects
 {
 	public interface IUser
 	{
@@ -8,5 +10,15 @@
 
 		bool IsChatAdmin(Chat chat);
 		string GetMentionLine();
+	}
+
+	public class UserEventArgs : EventArgs
+	{
+		public IUser User { get; }
+
+		public UserEventArgs(IUser user)
+		{
+			User = user;
+		}
 	}
 }

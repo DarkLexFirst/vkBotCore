@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using Newtonsoft.Json;
+using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
@@ -17,12 +19,14 @@ namespace VkBotCore
 		public VkCoreApiBase VkApi { get; set; }
 
 		private Dictionary<BaseChat, Queue<long>> _lastMessages;
+		public string[] CommandStarts { get; set; }
 
 		public MessageHandler(VkCoreApiBase vkApi)
 		{
 			VkApi = vkApi;
 
 			_lastMessages = new Dictionary<BaseChat, Queue<long>>();
+			CommandStarts = vkApi.Core.Configuration.GetArray($"Config:Groups:{VkApi.GroupId}:CommandStarts", new string[] { "/", "." });
 
 			InitializePoolWorker();
 		}
@@ -30,98 +34,103 @@ namespace VkBotCore
 		public virtual void OnMessage(IUser sender, string message, BaseChat chat, Message messageData)
 		{
 			//защита от дублированных или задержанных сообщений
-			long msgId = messageData.ConversationMessageId.Value;
-			if (!_lastMessages.ContainsKey(chat))
-				_lastMessages.Add(chat, new Queue<long>());
-			else
 			{
-				if (_lastMessages[chat].Contains(msgId)) return;
-				_lastMessages[chat].Enqueue(msgId);
-				if (_lastMessages[chat].Count > 10)
-					_lastMessages[chat].Dequeue();
+				long msgId = messageData.ConversationMessageId.Value;
+				if (!_lastMessages.ContainsKey(chat))
+					_lastMessages.Add(chat, new Queue<long>());
+				else
+				{
+					if (_lastMessages[chat].Contains(msgId)) return;
+					_lastMessages[chat].Enqueue(msgId);
+					if (_lastMessages[chat].Count > 10)
+						_lastMessages[chat].Dequeue();
+				}
 			}
-				//защита от дублированных или задержанных сообщений
+			//защита от дублированных или задержанных сообщений
 
 
 			//actions
-			if (messageData.Action != null)
+			if (messageData.Action != null && chat is Chat _chat)
 			{
-				if (chat is Chat _chat)
+				if (messageData.Action.Type == MessageAction.ChatKickUser)
 				{
-					if (messageData.Action.Type == MessageAction.ChatKickUser)
-					{
-						//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
-						//	_chat.OnKick(sender);
-						//else
-						_chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender);
-						return;
-					}
-					else if (messageData.Action.Type == MessageAction.ChatInviteUser)
-					{
-						if (messageData.Action.MemberId == -VkApi.GroupId)
-							_chat.OnJoin(sender);
-						else
-							_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
-						return;
-					}
-					else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
-					{
-						_chat.OnAddUser(sender, null, true);
-						return;
-					}
+					//if (messageData.Action.MemberId == -VkApi.GroupId) //нет события при кике бота.
+					//	_chat.OnKick(sender);
+					//else
+					_chat.OnKickUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender);
+					return;
 				}
-			}
-
-
-			if (sender is User user)
-			{
-				//buttons
-				if (!string.IsNullOrEmpty(messageData.Payload))
+				else if (messageData.Action.Type == MessageAction.ChatInviteUser)
 				{
-					try
-					{
-						var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
-						if (payload.Button != null)
-						{
-							var s = payload.Button.Split(':');
-							OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
-							return;
-						}
-					}
-					catch (Exception e)
-					{
-						Console.WriteLine(e);
-					}
+					if (messageData.Action.MemberId == -VkApi.GroupId)
+						_chat.OnJoin(sender);
+					else
+						_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
+					return;
 				}
-
-
-				//commands
-				if ((message.StartsWith("/") || message.StartsWith(".")) && message.Length != 1)
+				else if (messageData.Action.Type == MessageAction.ChatInviteUserByLink)
 				{
-					try
-					{
-						message = message.Replace("ё", "е");
-						VkApi.Core.PluginManager.HandleCommand(user, chat, message, messageData);
-
-						message = message.Substring(1);
-						var args = message.Split(' ').ToList();
-						string commandName = args.First();
-						args.Remove(commandName);
-
-						chat.OnCommand(user, commandName.ToLower(), args.ToArray(), messageData);
-					}
-					catch (Exception e)
-					{
-						chat.SendMessageAsync("Комманда задана неверно!");
-						VkApi.Core.Log.Error(e.ToString());
-					}
+					_chat.OnAddUser(sender, null, true);
 					return;
 				}
 			}
 
-			//other
+			if (sender is User user)
+			{
+				if (ClickButton(user, message, chat, messageData)) return;
+
+				if (UseCommand(user, message, chat, messageData)) return;
+			}
+
 			if (!OnGetMessage(new GetMessageEventArgs(chat, sender, message, messageData))) return;
+
 			chat.OnMessasge(sender, message, messageData);
+		}
+
+		private bool UseCommand(User user, string message, BaseChat chat, Message messageData)
+		{
+			string regStart = @"\A(" + string.Join('|', CommandStarts.Select(s => Regex.Escape(s))) + @")";
+
+			message = Regex.Match(message, regStart + @"[\S\s]{1,}", RegexOptions.IgnoreCase).Value;
+
+			if (message != null)
+			{
+				try
+				{
+					message = Regex.Replace(message.Replace("ё", "е"), regStart, "", RegexOptions.IgnoreCase);
+
+					VkApi.Core.PluginManager.HandleCommand(user, chat, message, messageData);
+					return true;
+				}
+				catch (Exception e)
+				{
+					chat.SendMessageAsync("Команда задана неверно!");
+					VkApi.Core.Log.Error(e.ToString());
+				}
+			}
+			return false;
+		}
+
+		private bool ClickButton(User user, string message, BaseChat chat, Message messageData)
+		{
+			if (!string.IsNullOrEmpty(messageData.Payload))
+			{
+				try
+				{
+					var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
+					if (payload.Button != null)
+					{
+						var s = payload.Button.Split(':');
+						OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
+						return true;
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+				}
+			}
+			return false;
 		}
 
 		public virtual void OnButtonClick(BaseChat chat, User user, string message, string keyboardId, string buttonId, Message messageData)
