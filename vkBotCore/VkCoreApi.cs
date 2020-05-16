@@ -30,15 +30,35 @@ namespace VkBotCore
 		public VkCoreApiBase Get(long groupId)
 		{
 			if (groupId == GroupId) return this;
+
 			return _vkApi.GetOrAdd(groupId, _groupId =>
 			{
 				var accesToken = Core.Configuration.GetValue<string>($"Config:Groups:{groupId}:AccessToken", null);
+
 				if (accesToken == null)
 					return this;
+
 				var api = new VkCoreApiBase(Core, _groupId);
 				api.Authorize(new ApiAuthParams { AccessToken = accesToken });
 				return api;
 			});
+		}
+
+		public VkCoreApiBase Get(string accessToken)
+		{
+			if (Token == accessToken)
+				return this;
+
+			var api = _vkApi.Values.FirstOrDefault(_api => _api.Token == accessToken);
+
+			if(api == null)
+			{
+				api = new VkCoreApiBase(Core);
+				api.Authorize(new ApiAuthParams { AccessToken = accessToken });
+				api.GroupId = api.Groups.GetById(null, null, null).First().Id;
+			}
+
+			return api;
 		}
 
 		public VkCoreApiBase[] GetAvailableApis(string _namespace)

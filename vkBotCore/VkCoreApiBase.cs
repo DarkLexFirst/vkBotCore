@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using VkNet;
@@ -14,7 +15,7 @@ namespace VkBotCore
 		/// <summary>
 		/// Идентификатор сообщества.
 		/// </summary>
-		public long GroupId { get; private set; }
+		public long GroupId { get; protected internal set; }
 
 		internal ConcurrentDictionary<long, BaseChat> _chatsCache { get; set; }
 		internal ConcurrentDictionary<long, IUser> _usersCache { get; set; }
@@ -30,13 +31,22 @@ namespace VkBotCore
 		/// </summary>
 		public string[] AvailableNamespaces { get; private set; }
 
-		public VkCoreApiBase(BotCore core, long groupId)
+		internal VkCoreApiBase(BotCore core, long groupId) : this(core)
 		{
-			Core = core;
 			GroupId = groupId;
 			RequestsPerSecond = Core.Configuration.GetValue($"Config:Groups:{groupId}:RequestsPerSecond", 20);
-			MessageHandler = new MessageHandler(this);
 			AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
+		}
+
+		internal VkCoreApiBase(BotCore core)
+		{
+			Core = core;
+
+			MessageHandler = new MessageHandler(this);
+
+			RequestsPerSecond = 20;
+			AvailableNamespaces = new string[0];
+
 
 			_chatsCache = new ConcurrentDictionary<long, BaseChat>();
 			_usersCache = new ConcurrentDictionary<long, IUser>();
