@@ -165,8 +165,11 @@ namespace VkBotCore.Subjects
 				_cachedKeyboards[keyboard.Id] = keyboard;
 		}
 
-		public void InvokeButton(User user, string keyboardId, string buttonId)
+		public void InvokeButton(User user, KeyboardButtonPayload payload)
 		{
+			var keyboardId = payload.KeyboardId;
+			var buttonId = payload.ButtonId;
+
 			if (BaseKeyboard?.Id == keyboardId)
 			{
 				BaseKeyboard.TryInvokeButton(this, user, buttonId);

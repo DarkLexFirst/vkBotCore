@@ -124,13 +124,14 @@ namespace VkBotCore
 			{
 				try
 				{
-					var payload = JsonConvert.DeserializeObject<KeyboardButtonPayload>(messageData.Payload);
-					if (payload.Button != null)
+					var payload = KeyboardButtonPayload.Deserialize(messageData.Payload);
+					if (payload != null)
 					{
-						var s = payload.Button.Split(':');
-						OnButtonClick(chat, user, message, s[0], s.Length == 1 ? "0" : s[1], messageData);
+						if (payload.GroupId == VkApi.GroupId || payload.GroupId == 0)
+							OnButtonClick(chat, user, message, payload, messageData);
 						return true;
 					}
+
 				}
 				catch (Exception e)
 				{
@@ -140,10 +141,10 @@ namespace VkBotCore
 			return false;
 		}
 
-		public virtual void OnButtonClick(BaseChat chat, User user, string message, string keyboardId, string buttonId, Message messageData)
+		public virtual void OnButtonClick(BaseChat chat, User user, string message, KeyboardButtonPayload payload, Message messageData)
 		{
-			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, message, keyboardId, buttonId, messageData))) return;
-			chat.InvokeButton(user, keyboardId, buttonId);
+			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, message, payload, messageData))) return;
+			chat.InvokeButton(user, payload);
 		}
 
 		public void SendMessage(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
@@ -153,7 +154,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = message,
-				Keyboard = keyboard?.GetKeyboard(),
+				Keyboard = keyboard?.GetKeyboard(VkApi.GroupId),
 				DisableMentions = disableMentions
 			});
 		}
@@ -165,7 +166,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = message,
-				Keyboard = keyboard?.GetKeyboard(),
+				Keyboard = keyboard?.GetKeyboard(VkApi.GroupId),
 				DisableMentions = disableMentions
 			});
 		}
@@ -177,7 +178,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = message,
-				Keyboard = keyboard?.GetKeyboard(),
+				Keyboard = keyboard?.GetKeyboard(VkApi.GroupId),
 				DisableMentions = disableMentions
 			});
 		}
@@ -232,7 +233,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard()
+				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
 			});
 		}
 
@@ -243,7 +244,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard()
+				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
 			});
 		}
 
@@ -254,7 +255,7 @@ namespace VkBotCore
 				RandomId = GetRandomId(),
 				PeerId = peerId,
 				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard()
+				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
 			});
 		}
 

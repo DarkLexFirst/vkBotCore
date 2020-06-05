@@ -8,20 +8,17 @@ namespace VkBotCore.UI
 	{
 		string Id { get; set; }
 
-		MessageKeyboardButton GetButton(Keyboard keyboard);
+		MessageKeyboardButton GetButton(Keyboard keyboard, long groupId);
 	}
 
 	public class ButtonClickEventArgs : GetMessageEventArgs<User>
 	{
 
-		public string KeyboardId { get; set; }
+		public KeyboardButtonPayload Payload { get; set; }
 
-		public string ButtonId { get; set; }
-
-		public ButtonClickEventArgs(BaseChat chat, User sender, string message, string keyboardId, string buttonId, Message messageData) : base(chat, sender, message, messageData)
+		public ButtonClickEventArgs(BaseChat chat, User sender, string message, KeyboardButtonPayload payload, Message messageData) : base(chat, sender, message, messageData)
 		{
-			KeyboardId = keyboardId;
-			ButtonId = buttonId;
+			Payload = payload;
 		}
 	}
 }

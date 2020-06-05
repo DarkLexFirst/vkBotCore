@@ -27,9 +27,9 @@ namespace VkBotCore.UI
 			Link = link;
 		}
 
-		public MessageKeyboardButton GetButton(Keyboard keyboard)
+		public MessageKeyboardButton GetButton(Keyboard keyboard, long groupId)
 		{
-			MessageKeyboardButtonAction action = new MessageKeyboardButtonAction();
+			var action = new MessageKeyboardButtonAction();
 			action.Type = KeyboardButtonActionType.OpenLink;
 			action.Label = Label;
 			action.Link = new Uri(Link);

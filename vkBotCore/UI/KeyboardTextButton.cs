@@ -18,6 +18,11 @@ namespace VkBotCore.UI
 		public string Label { get; set; }
 
 		/// <summary>
+		/// Дополнительная информация.
+		/// </summary>
+		public string Payload { get; set; }
+
+		/// <summary>
 		/// Событие, вызываемое после нажатия кнопки.
 		/// </summary>
 		public Action<BaseChat, User> Action { get; private set; }
@@ -39,7 +44,7 @@ namespace VkBotCore.UI
 			Label = label;
 		}
 
-		public MessageKeyboardButton GetButton(Keyboard keyboard)
+		public MessageKeyboardButton GetButton(Keyboard keyboard, long groupId)
 		{
 			KeyboardButtonColor color = KeyboardButtonColor.Default;
 			switch (Color)
@@ -55,11 +60,18 @@ namespace VkBotCore.UI
 					break;
 			}
 
-			MessageKeyboardButtonAction action = new MessageKeyboardButtonAction();
+			var action = new MessageKeyboardButtonAction();
 			action.Type = KeyboardButtonActionType.Text;
 			action.Label = Label;
 
-			action.Payload = $"{{\"button\": \"{keyboard.Id}:{Id}\"}}";
+			var payload = new KeyboardButtonPayload()
+			{
+				GroupId = groupId,
+				KeyboardId = keyboard.Id,
+				ButtonId = Id
+			};
+
+			action.Payload = payload.Serialize();
 
 			return new MessageKeyboardButton() { Color = color, Action = action };
 		}

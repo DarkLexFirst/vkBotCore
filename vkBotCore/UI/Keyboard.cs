@@ -68,14 +68,14 @@ namespace VkBotCore.UI
 			_buttons.Add(new List<IKeyboardButton>());
 		}
 
-		internal MessageKeyboard GetKeyboard()
+		internal MessageKeyboard GetKeyboard(long groupId)
 		{
 			if (IsEmpty) throw new KeyboardEmptyException();
 
 			_buttons.RemoveAll(l => l.Count == 0);
 
 			MessageKeyboard keyboard = new MessageKeyboard();
-			keyboard.Buttons = _buttons.Select(line => line.Select(b => b.GetButton(this)));
+			keyboard.Buttons = _buttons.Select(line => line.Select(b => b.GetButton(this, groupId)));
 			keyboard.Inline = InMessage;
 			keyboard.OneTime = OneTime && !InMessage;
 			return keyboard;
