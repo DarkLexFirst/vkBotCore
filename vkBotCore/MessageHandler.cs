@@ -26,7 +26,7 @@ namespace VkBotCore
 			VkApi = vkApi;
 
 			_lastMessages = new Dictionary<BaseChat, Queue<long>>();
-			CommandStarts = vkApi.Core.Configuration.GetArray($"Config:Groups:{VkApi.GroupId}:CommandStarts", new string[] { "/", "." });
+			CommandStarts = vkApi.Core.Configuration.GetArray($"Config:Groups:{vkApi.GroupId}:CommandStarts", new string[] { "/", "." });
 
 			InitializePoolWorker();
 		}
@@ -63,7 +63,7 @@ namespace VkBotCore
 				else if (messageData.Action.Type == MessageAction.ChatInviteUser)
 				{
 					if (messageData.Action.MemberId == -VkApi.GroupId)
-						_chat.OnJoin(sender);
+						_chat.Join(sender);
 					else
 						_chat.OnAddUser(VkApi.GetUser(messageData.Action.MemberId.Value), sender, false);
 					return;
@@ -89,11 +89,18 @@ namespace VkBotCore
 
 		private bool UseCommand(User user, string message, BaseChat chat, Message messageData)
 		{
-			string regStart = @"\A(" + string.Join('|', CommandStarts.Select(s => Regex.Escape(s))) + @")";
+			var starts = CommandStarts.Select(s => Regex.Escape(s)).ToList();
+
+			foreach (var start in starts.ToArray())
+			{
+				starts.Add($@"\[(public|club){VkApi.GroupId}\|[\S\s]{{1,}}] {start}");
+			}
+
+			string regStart = @"\A(" + string.Join('|', starts) + @")";
 
 			message = Regex.Match(message, regStart + @"[\S\s]{1,}", RegexOptions.IgnoreCase).Value;
 
-			if (message != null)
+			if (!string.IsNullOrEmpty(message))
 			{
 				try
 				{
@@ -127,7 +134,7 @@ namespace VkBotCore
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					VkApi.Core.Log.Error(e.ToString());
 				}
 			}
 			return false;

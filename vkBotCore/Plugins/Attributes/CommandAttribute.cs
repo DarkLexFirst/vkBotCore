@@ -33,6 +33,16 @@ namespace VkBotCore.Plugins.Attributes
 		/// Отображать развёрнутое описание.
 		/// </summary>
 		public bool UseFullDescription = false;
+
+		/// <summary>
+		/// Уровень разрешения команды.
+		/// </summary>
+		public short Permission = 0;
+
+		/// <summary>
+		/// Область использования команды.
+		/// </summary>
+		public CommandUsage Usage = CommandUsage.Everywhere;
 	}
 
 	/// <summary>

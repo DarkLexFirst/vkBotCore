@@ -34,22 +34,22 @@ namespace VkBotCore
 		internal VkCoreApiBase(BotCore core, long groupId) : this(core)
 		{
 			GroupId = groupId;
-			RequestsPerSecond = Core.Configuration.GetValue($"Config:Groups:{groupId}:RequestsPerSecond", 20);
-			AvailableNamespaces = Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[0]);
 		}
 
 		internal VkCoreApiBase(BotCore core)
 		{
 			Core = core;
 
-			MessageHandler = new MessageHandler(this);
-
-			RequestsPerSecond = 20;
-			AvailableNamespaces = new string[0];
-
-
 			_chatsCache = new ConcurrentDictionary<long, BaseChat>();
 			_usersCache = new ConcurrentDictionary<long, IUser>();
+		}
+
+		internal void Initialize()
+		{
+			MessageHandler = new MessageHandler(this);
+
+			RequestsPerSecond = Core.Configuration.GetValue($"Config:Groups:{GroupId}:RequestsPerSecond", 20);
+			AvailableNamespaces = Core.Configuration.GetArray<string>($"Config:Groups:{GroupId}:AvailableNamespaces");
 		}
 
 		/// <summary>

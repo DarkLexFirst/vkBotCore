@@ -152,7 +152,9 @@ namespace VkBotCore.Subjects
 
 		private string Get(string key)
 		{
-			return User.VkApi.Storage.Get(new string[] { key }, (ulong)User.Id).FirstOrDefault().Value;
+			var value = User.VkApi.Storage.Get(new string[] { key }, (ulong) User.Id).FirstOrDefault().Value;
+			if (string.IsNullOrEmpty(value)) return null;
+			return value;
 		}
 
 		private List<string> GetKeys()

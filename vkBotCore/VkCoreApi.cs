@@ -10,14 +10,14 @@ namespace VkBotCore
 	{
 		internal ConcurrentDictionary<long, VkCoreApiBase> _vkApi { get; private set; }
 
-		public VkCoreApi(BotCore core) : base(core, 0)
+		public VkCoreApi(BotCore core) : base(core)
 		{
 			_vkApi = new ConcurrentDictionary<long, VkCoreApiBase>();
 
 			var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
 			if (accesToken != null)
 				Authorize(new ApiAuthParams { AccessToken = accesToken });
-
+			Initialize();
 			LoadAll();
 		}
 
@@ -40,6 +40,7 @@ namespace VkBotCore
 
 				var api = new VkCoreApiBase(Core, _groupId);
 				api.Authorize(new ApiAuthParams { AccessToken = accesToken });
+				api.Initialize();
 				return api;
 			});
 		}
@@ -56,6 +57,7 @@ namespace VkBotCore
 				api = new VkCoreApiBase(Core);
 				api.Authorize(new ApiAuthParams { AccessToken = accessToken });
 				api.GroupId = api.Groups.GetById(null, null, null).First().Id;
+				api.Initialize();
 			}
 
 			return api;

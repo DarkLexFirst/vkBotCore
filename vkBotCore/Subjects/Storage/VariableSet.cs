@@ -51,6 +51,7 @@ namespace VkBotCore.Subjects
 				return Enum.Parse(typeof(T), value) as T?;
 			return Convert.ChangeType(value, typeof(T)) as T?;
 		}
+
 		public void SetValue<T>(string key, T value) where T : struct
 		{
 			this[key] = value.ToString();

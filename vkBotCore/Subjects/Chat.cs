@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using VkBotCore.Subjects;
 using VkBotCore.UI;
+using VkBotCore.Utils;
 using Message = VkNet.Model.Message;
 
 namespace VkBotCore.Subjects
@@ -34,6 +37,16 @@ namespace VkBotCore.Subjects
 		public Chat(VkCoreApiBase vkApi, long peerId) : base(vkApi, peerId)
 		{
 			Settings = new ChatSettings(this);
+		}
+
+		internal void Join(IUser addedBy)
+		{
+			if (addedBy is User user)
+			{
+				SetUserPermission(user, UserPermission.Admin);
+			}
+
+			OnJoin(addedBy);
 		}
 
 		protected internal virtual void OnJoin(IUser addedBy)
@@ -129,6 +142,9 @@ namespace VkBotCore.Subjects
 			return _inviteLinkCache;
 		}
 
+		private long[] _adminsCache = null;
+		private DateTime _lastAdminsGetTime = DateTime.Now;
+
 		/// <summary>
 		/// Возвращает идентификаторы администраторов диалога.
 		/// </summary>
@@ -136,8 +152,30 @@ namespace VkBotCore.Subjects
 		{
 			try
 			{
-				var members = VkApi.Messages.GetConversationMembers(PeerId, new List<string>()).Items;
-				return members.Where(m => m.IsAdmin).Select(m => m.MemberId).ToArray();
+				if (_adminsCache != null && (DateTime.Now - _lastAdminsGetTime).TotalSeconds < 10)
+					return _adminsCache;
+
+				_adminsCache = JsonConvert.DeserializeObject<Dictionary<string, long[]>>(VkApi.Execute.Execute($@"
+				
+				var members = API.messages.getConversationMembers({{{($"\"peer_id\": {PeerId}")}}});
+				
+				var result = [];
+				var i = 0;
+				
+				while(i < members.items.length)
+				{{
+					if(members.items[i].is_admin)
+						result.push(members.items[i].member_id);
+					i = i + 1;
+				}}
+				
+				return result;
+
+				").RawJson).FirstOrDefault().Value;
+
+				if (_adminsCache == null) return new long[0];
+
+				return _adminsCache;
 			}
 			catch
 			{
@@ -159,6 +197,38 @@ namespace VkBotCore.Subjects
 			{
 				return new long[0];
 			}
+		}
+
+		private const string PermissionsTag = "user_chat_permissions";
+
+		/// <summary>
+		/// Устанавливает разрешения для пользователя в чате.
+		/// </summary>
+		public void SetUserPermission(User user, Enum value)
+		{
+			var permissions = VkApi.Core.PluginManager.Permissions;
+			if (permissions.ContainsValue(value))
+			{
+				var permission = permissions.First(p => p.Value.Equals(value));
+				SetUserPermission(user, permission.Key);
+			}
+		}
+
+		/// <summary>
+		/// Устанавливает разрешения для пользователя в чате.
+		/// </summary>
+		public void SetUserPermission(User user, short value)
+		{
+			Storage.UsersStorage[user].SetValue(PermissionsTag, value);
+		}
+
+		/// <summary>
+		/// Возвращает разрешение для пользователя в чате.
+		/// </summary>
+		public short GetUserPermission(User user)
+		{
+			if (user.IsChatAdmin(this)) return (short) UserPermission.Unlimited;
+			return Storage.UsersStorage[user].GetValue<short>(PermissionsTag) ?? 0;
 		}
 
 		public string GetEveryoneMentionLine(string val = "&#8203;")

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -17,6 +17,7 @@ using VkBotCore.Callback;
 using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using Message = VkNet.Model.Message;
+using VkBotCore.Utils;
 
 namespace VkBotCore.Plugins
 {
@@ -37,10 +38,16 @@ namespace VkBotCore.Plugins
 
 		private string _currentPath = null;
 
+		public PermissionSet Permissions { get; set; } = new PermissionSet();
+
 		public PluginManager(BotCore core)
 		{
 			Core = core;
 			LoadCommands(new BaseCommands());
+
+			Permissions.Add(UserPermission.Block);
+			Permissions.Add(UserPermission.None);
+			Permissions.Add(UserPermission.Admin);
 		}
 
 		internal void LoadPlugins()
@@ -364,13 +371,14 @@ namespace VkBotCore.Plugins
 				return null;
 			}
 
-			foreach (var overload in command.Overloads.Values.OrderByDescending(o => o.Method.GetParameters().Length))
+			var overloads = PermittedOverloads(command.Overloads.Values.OrderByDescending(o => o.Method.GetParameters().Length), user, chat as Chat);
+			foreach (var overload in overloads)
 			{
 				try
 				{
 					MethodInfo method = overload.Method;
 
-					if (!IsAvailable(method, chat.VkApi.GroupId))
+					if (!IsAvailable(method, chat.VkApi.GroupId) || !CorrectlyUsage(method, chat))
 						continue;
 
 					if (ExecuteCommand(method, user, chat, arguments, messageData, out object retVal))
@@ -400,6 +408,14 @@ namespace VkBotCore.Plugins
 			return _namespace == GetNamespaceParrant(GetType()) || Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[] { _namespace }).Contains(_namespace);
 		}
 
+		internal bool CorrectlyUsage(MethodInfo method, BaseChat chat)
+		{
+			var usage = _pluginCommands[method].Usage;
+			if (usage == CommandUsage.Everywhere) return true;
+
+			return (usage == CommandUsage.Conversation) == chat.IsConversation;
+		}
+
 		public VkCoreApiBase[] GetAvailableApis(Type type)
 		{
 			return Core.VkApi.GetAvailableApis(GetNamespaceParrant(type));
@@ -408,6 +424,85 @@ namespace VkBotCore.Plugins
 		private string GetNamespaceParrant(Type type)
 		{
 			return type.Namespace.Split('.').First();
+		}
+
+		internal IEnumerable<Overload> PermittedOverloads(IEnumerable<Overload> overloads, User user, Chat chat)
+		{
+			var userPermission = GetUserPermission(user, chat);
+			return overloads.Where(overload => userPermission >= GetCommandPermission(chat, overload.Method));
+		}
+
+		internal bool HasPermissions(MethodInfo command, User user, Chat chat)
+		{
+			return GetUserPermission(user, chat) >= GetCommandPermission(chat, command);
+		}
+
+		public short GetUserPermission(User user, Chat chat)
+		{
+			if (chat == null) return user.PermissionLevel;
+			return Math.Max(chat.GetUserPermission(user), user.PermissionLevel);
+		}
+
+		private const string CommandPermissionsKey = "commands_permissions";
+
+		/// <summary>
+		/// Устанавливает разрешения для команды в чате.
+		/// </summary>
+		public void SetUserPermission(Chat chat, MethodInfo command, Enum value)
+		{
+			if (Permissions.TryGetPermission(value, out short permission))
+			{
+				SetCommandPermission(chat, command, permission);
+			}
+		}
+
+		/// <summary>
+		/// Устанавливает разрешения для команды в чате.
+		/// </summary>
+		public void SetCommandPermission(Chat chat, MethodInfo command, short value)
+		{
+			var permissions = GetCommandPermissions(chat);
+
+			var key = GenerateCommandOverloadKey(command);
+			if (permissions == null)
+			{
+				permissions = new Dictionary<string, short>() { { key, value } };
+				chat.Storage.Variables.Set(CommandPermissionsKey, permissions);
+				return;
+			}
+
+			if(value == _pluginCommands[command].Permission)
+			{
+				permissions.Remove(key);
+				return;
+			}
+
+			if (!permissions.TryAdd(key, value))
+				permissions[key] = value;
+		}
+
+		/// <summary>
+		/// Возвращает разрешение для команды в чате.
+		/// </summary>
+		public short GetCommandPermission(Chat chat, MethodInfo command)
+		{
+			if (chat == null) return _pluginCommands[command].Permission;
+
+			var permissions = GetCommandPermissions(chat);
+			if (permissions == null) return _pluginCommands[command].Permission;
+			if(permissions.TryGetValue(GenerateCommandOverloadKey(command), out short permission))
+				return permission;
+			return _pluginCommands[command].Permission;
+		}
+
+		private Dictionary<string, short> GetCommandPermissions(Chat chat)
+		{
+			return chat.Storage.Variables.Get<Dictionary<string, short>>(CommandPermissionsKey);
+		}
+
+		private static string GenerateCommandOverloadKey(MethodInfo command)
+		{
+			return $"{command.Name}({string.Join(", ", command.GetParameters().Select(p => p.ParameterType.Name))})";
 		}
 
 		private Command GetCommand(string commandName, long groupId)
@@ -448,7 +543,7 @@ namespace VkBotCore.Plugins
 			Core.Log.Info($"Execute command {method}");
 
 			result = new object();
-			CommandContext context = new CommandContext(Core, user, chat, messageData);
+			CommandContext context = new CommandContext(Core, user, chat, messageData, method);
 
 			var parameters = method.GetParameters();
 

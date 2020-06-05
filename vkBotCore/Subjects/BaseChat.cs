@@ -188,6 +188,32 @@ namespace VkBotCore.Subjects
 			return VkApi.MessageHandler.DeleteMessage(id);
 		}
 
+		private const int _messageCallingDelay = 50;
+
+		public async Task<GetMessageEventArgs> WaitMessageAsync(int timeout = 15, Func<GetMessageEventArgs, bool> filther = null)
+		{
+			var callsCount = timeout * 1000 / _messageCallingDelay;
+
+			GetMessageEventArgs value = null;
+
+			EventHandler<GetMessageEventArgs> getMessageEvent = (s, e) =>
+			{
+				if (e.Chat == this && (filther?.Invoke(e) ?? true))
+					value = e;
+			};
+
+			VkApi.MessageHandler.GetMessage += getMessageEvent;
+
+			for (var i = 0; i < callsCount && value == null; i++)
+			{
+				await Task.Delay(_messageCallingDelay);
+			}
+
+			VkApi.MessageHandler.GetMessage -= getMessageEvent;
+
+			return value;
+		}
+
 		public override bool Equals(object obj) => obj is BaseChat chat && Equals(chat);
 		public bool Equals(BaseChat other) => other.PeerId == PeerId && other.VkApi.Equals(VkApi);
 

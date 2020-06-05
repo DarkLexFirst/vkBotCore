@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VkBotCore.Configuration;
-using VkNet.Model;
+using VkBotCore.Utils;
 
 namespace VkBotCore.Subjects
 {
@@ -26,7 +26,20 @@ namespace VkBotCore.Subjects
 		/// <summary>
 		/// Определяет, есть ли у пользователя права администратора приложения.
 		/// </summary>
-		public bool IsAdmin { get => VkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id); }
+		public bool IsAppAdmin { get; private set; }
+
+		private const string PermissionsTag = "user_permissions";
+
+		/// <summary>
+		/// Уровень разрешений ползователя.
+		/// </summary>
+		public short PermissionLevel {
+			get
+			{
+				if (IsAppAdmin) return (short) UserPermission.Unlimited;
+				return Storage.GetValue<short>(PermissionsTag) ?? 0;
+			}
+			set => Storage.SetValue(PermissionsTag, value); }
 
 		/// <summary>
 		/// Хранилище.
@@ -41,6 +54,8 @@ namespace VkBotCore.Subjects
 			var u = GetApiUser();
 			FirstName = u?.FirstName;
 			LastName = u?.LastName;
+
+			IsAppAdmin = vkApi.Core.Configuration.GetArray<long>("Config:Admins").Contains(Id);
 
 			Storage = new Storage(this);
 		}
@@ -61,6 +76,19 @@ namespace VkBotCore.Subjects
 		public bool IsChatAdmin(Chat chat)
 		{
 			return chat.GetAllChatAdministrators().Contains(Id);
+		}
+
+		/// <summary>
+		/// Устанавливает глобальное разрешения для пользователя.
+		/// </summary>
+		public void SetPermissions(Enum value)
+		{
+			var permissions = VkApi.Core.PluginManager.Permissions;
+			if (permissions.ContainsValue(value))
+			{
+				var permission = permissions.First(p => p.Value.Equals(value));
+				PermissionLevel = permission.Key;
+			}
 		}
 
 		/// <summary>

@@ -41,7 +41,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void GetChatId(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
                 context.Chat.SendMessageAsync("Current chat id: " + context.Chat.PeerId);
         }
 
@@ -67,7 +67,7 @@ namespace TestPlugin
         [Command(IsHidden = true), DefaultCommand]
         private static void TestCommand(CommandContext context, [SubCommand]TestCommandCmd cmd, bool boolVal, int intVal = 30, [HideDefault]Colors color = Colors.Transperent)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
                 context.Chat.SendMessageAsync($"{cmd}   {boolVal}   {intVal}   {color}");
         }
 
@@ -76,7 +76,7 @@ namespace TestPlugin
         [Command(Name = "test", IsHidden = true)]
         private static void Test2Command(CommandContext context, [SubCommand]Test2CommandCmd cmd)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
                 context.Chat.SendMessageAsync($"{cmd}");
         }
 
@@ -103,7 +103,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void UITest1(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("test") { OneTime = true };
                 k.Add(new KeyboardTextButton("test button 1", (c, u) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Red });
@@ -116,7 +116,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void UITest2(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("test");
                 k.Add(new KeyboardTextButton("test button 1", (c, u) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
@@ -127,7 +127,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void UITest3(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("test") { InMessage = true };
                 k.Add(new KeyboardTextButton("test button 1", "test_named_button") { Color = ButtonColor.Red });
@@ -139,7 +139,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void VkPayTest(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("vk pay ptg test") { InMessage = true };
                 k.Add(new KeyboardVkPayButton(new VkPay(VkPayAction.Pay, VkPayTarget.Group, context.Chat.VkApi.GroupId, 10)));
@@ -160,7 +160,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void StorageSet(CommandContext context, string dataTag, string data, bool forced = false)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 if (forced)
                     context.Sender.Storage.ForcedSet(dataTag, data);
@@ -172,7 +172,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void StorageGet(CommandContext context, string dataTag)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 context.Chat.SendMessageAsync(context.Sender.Storage[dataTag]);
             }
@@ -181,7 +181,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void StorageRemove(CommandContext context, string dataTag)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 context.Sender.Storage[dataTag] = null;
             }
@@ -190,7 +190,7 @@ namespace TestPlugin
         [Command(IsHidden = true)]
         private static void GetAllStorageKeys(CommandContext context)
         {
-            if (context.Sender.IsAdmin)
+            if (context.Sender.IsAppAdmin)
             {
                 context.Chat.SendMessageAsync(string.Join(", ", context.Sender.Storage.Keys));
             }
@@ -199,7 +199,7 @@ namespace TestPlugin
 		[Command(IsHidden = true)]
 		private static void poolTest(CommandContext context, params string[] message)
 		{
-			if (context.Sender.IsAdmin)
+			if (context.Sender.IsAppAdmin)
 			{
 				for (var i = 0; i < 10; i++)
 					context.Chat.SendMessageWithPool(i);
@@ -212,7 +212,7 @@ namespace TestPlugin
 		{
 			if (context.Chat is Chat chat)
 			{
-				if (context.Sender.IsAdmin)
+				if (context.Sender.IsAppAdmin)
 				{
 					chat.Storage.Variables[key] = val;
 				}
@@ -224,7 +224,7 @@ namespace TestPlugin
 		{
 			if (context.Chat is Chat chat)
 			{
-				if (context.Sender.IsAdmin)
+				if (context.Sender.IsAppAdmin)
 				{
 					chat.SendMessage($"{key} = {chat.Storage.Variables[key]}");
 				}
@@ -236,7 +236,7 @@ namespace TestPlugin
 		{
 			if (context.Chat is Chat chat)
 			{
-				if (context.Sender.IsAdmin)
+				if (context.Sender.IsAppAdmin)
 				{
 					chat.Storage.UsersStorage[user][key] = val;
 				}
@@ -248,7 +248,7 @@ namespace TestPlugin
 		{
 			if (context.Chat is Chat chat)
 			{
-				if (context.Sender.IsAdmin)
+				if (context.Sender.IsAppAdmin)
 				{
 					chat.SendMessage($"{key} = {chat.Storage.UsersStorage[user][key]}");
 				}
@@ -260,11 +260,24 @@ namespace TestPlugin
 		{
 			if (context.Chat is Chat chat)
 			{
-				if (context.Sender.IsAdmin)
+				if (context.Sender.IsAppAdmin)
 				{
 					chat.Storage.Save(true);
 				}
 			}
+		}
+
+		[Command(IsHidden = true)]
+		private static async void testm(CommandContext context)
+		{
+			context.Chat.SendMessageAsync("write any message...");
+			var message = await context.Chat.WaitMessageAsync();
+			if (message == null)
+			{
+				context.Chat.SendMessageAsync("no message");
+				return;
+			}
+			context.Chat.SendMessageAsync($"message: {message.Message}");
 		}
 	}
 }
