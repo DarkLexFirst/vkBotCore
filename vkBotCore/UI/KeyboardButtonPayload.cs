@@ -9,7 +9,14 @@ namespace VkBotCore.UI
 		public string ButtonId { get; set; }
 
 		[JsonProperty("command")]
-		private string _command { set => ButtonId = value; }
+		private string _command
+		{
+			set
+			{
+				KeyboardId = value;
+				ButtonId = value;
+			}
+		}
 
 		public string Payload { get; set; }
 
@@ -28,6 +35,11 @@ namespace VkBotCore.UI
 			{
 				return null;
 			}
+		}
+
+		public bool IsValid()
+		{
+			return KeyboardId != null && ButtonId != null;
 		}
 	}
 }

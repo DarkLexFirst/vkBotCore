@@ -74,7 +74,7 @@ namespace VkBotCore.UI
 
 			_buttons.RemoveAll(l => l.Count == 0);
 
-			MessageKeyboard keyboard = new MessageKeyboard();
+			var keyboard = new MessageKeyboard();
 			keyboard.Buttons = _buttons.Select(line => line.Select(b => b.GetButton(this, groupId)));
 			keyboard.Inline = InMessage;
 			keyboard.OneTime = OneTime && !InMessage;
@@ -87,10 +87,10 @@ namespace VkBotCore.UI
 			foreach (var line in _buttons)
 			{
 				var button = line.FirstOrDefault(b => b.Id == buttonId);
-				if (button == null) return;
+				if (button == null) continue;
 
 				if (button is KeyboardTextButton textButton)
-					textButton.Action?.Invoke(chat, user);
+					textButton.Action?.Invoke(chat, user, textButton);
 			}
 		}
 

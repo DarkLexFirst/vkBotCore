@@ -25,14 +25,14 @@ namespace VkBotCore.UI
 		/// <summary>
 		/// Событие, вызываемое после нажатия кнопки.
 		/// </summary>
-		public Action<BaseChat, User> Action { get; private set; }
+		public Action<BaseChat, User, KeyboardTextButton> Action { get; private set; }
 
 		/// <summary>
 		/// Цвет кнопки.
 		/// </summary>
 		public ButtonColor Color { get; set; } = ButtonColor.White;
 
-		public KeyboardTextButton(string label, Action<BaseChat, User> action)
+		public KeyboardTextButton(string label, Action<BaseChat, User, KeyboardTextButton> action)
 		{
 			Label = label;
 			Action = action;
@@ -68,7 +68,8 @@ namespace VkBotCore.UI
 			{
 				GroupId = groupId,
 				KeyboardId = keyboard.Id,
-				ButtonId = Id
+				ButtonId = Id,
+				Payload = Payload
 			};
 
 			action.Payload = payload.Serialize();

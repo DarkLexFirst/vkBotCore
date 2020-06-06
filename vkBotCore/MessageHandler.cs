@@ -125,7 +125,7 @@ namespace VkBotCore
 				try
 				{
 					var payload = KeyboardButtonPayload.Deserialize(messageData.Payload);
-					if (payload != null)
+					if (payload != null && payload.IsValid())
 					{
 						if (payload.GroupId == VkApi.GroupId || payload.GroupId == 0)
 							OnButtonClick(chat, user, message, payload, messageData);
