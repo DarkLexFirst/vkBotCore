@@ -93,7 +93,7 @@ namespace VkBotCore
 
 			foreach (var start in starts.ToArray())
 			{
-				starts.Add($@"\[(public|club){VkApi.GroupId}\|[\S\s]{{1,}}] {start}");
+				starts.Add($@"\[(public|club){VkApi.GroupId}\|[\S\s]{{1,}}](,|) {start}");
 			}
 
 			string regStart = @"\A(" + string.Join('|', starts) + @")";
