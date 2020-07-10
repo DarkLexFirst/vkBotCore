@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
+using System.Buffers;
 using System.Diagnostics;
+using System.IO.Pipelines;
+using System.Text;
 using System.Threading;
 using VkBotCore.Subjects;
 using VkNet.Utils;
@@ -30,8 +34,24 @@ namespace VkBotCore.Callback
 			}
 		}
 
+		public IActionResult Callback()
+		{
+			if (Request.BodyReader.TryRead(out ReadResult result))
+			{
+				byte[] bytes = result.Buffer.ToArray();
+
+				var body = Encoding.UTF8.GetString(bytes);
+
+				var updates = JsonConvert.DeserializeObject<Updates>(body);
+
+				return OnUpdate(updates);
+			}
+
+			return Ok("Body is empty");
+		}
+
 		private long _messageResendBlockTime = 10;
-		public IActionResult Callback([FromBody]Updates updates)
+		private IActionResult OnUpdate(Updates updates)
 		{
 			try
 			{
