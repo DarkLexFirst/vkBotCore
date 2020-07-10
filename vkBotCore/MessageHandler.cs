@@ -10,6 +10,7 @@ using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Model.RequestParams;
+using VkNet.Utils;
 using Message = VkNet.Model.Message;
 
 namespace VkBotCore
@@ -144,7 +145,37 @@ namespace VkBotCore
 		public virtual void OnButtonClick(BaseChat chat, User user, string message, KeyboardButtonPayload payload, Message messageData)
 		{
 			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, message, payload, messageData))) return;
-			chat.InvokeButton(user, payload);
+			chat.InvokeButton(user, payload, null);
+		}
+
+		internal bool ClickButton(BaseChat chat, User user, string eventId, string payload)
+		{
+			if (!string.IsNullOrEmpty(payload))
+			{
+				try
+				{
+					var _payload = KeyboardButtonPayload.Deserialize(payload);
+					if (_payload != null && _payload.IsValid())
+					{
+						if (_payload.GroupId == VkApi.GroupId || _payload.GroupId == 0)
+							OnButtonClick(chat, user, eventId, _payload);
+						return true;
+					}
+
+				}
+				catch (Exception e)
+				{
+					VkApi.Core.Log.Error(e.ToString());
+				}
+			}
+			return false;
+		}
+
+		public virtual void OnButtonClick(BaseChat chat, User user, string eventId, KeyboardButtonPayload payload)
+		{
+			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, eventId, payload)))
+				return;
+			chat.InvokeButton(user, payload, eventId);
 		}
 
 		public void SendMessage(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
@@ -257,6 +288,36 @@ namespace VkBotCore
 				Message = keyboard.Message,
 				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
 			});
+		}
+
+
+
+		public async Task SendMessageEventAnswerAsync(long peerId, string eventId, long userId, string eventData) //TODO
+		{
+			try
+			{
+				var parameters = new VkParameters()
+				{
+					{ "event_id", eventId },
+					{ "user_id", userId },
+					{ "peer_id", peerId },
+					{ "event_data", eventData },
+				};
+
+				//if (!string.IsNullOrEmpty(eventData))
+				//	parameters.Add("event_data", eventData.ToString());
+
+				await VkApi.CallAsync("messages.sendMessageEventAnswer", parameters);
+			}
+			catch (Exception e)
+			{
+				if (!BaseChat.IsUserConversation(peerId))
+				{
+					VkApi.GetChat<Chat>(peerId).OnKick(null);
+					return;
+				}
+				throw e;
+			}
 		}
 
 		public void SendSticker(MessagesSendStickerParams message)

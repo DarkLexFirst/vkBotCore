@@ -55,6 +55,11 @@ namespace VkBotCore.Callback
 			public const string Deny = "message_deny";
 
 			/// <summary>
+			/// Действие с сообщением. Используется для работы с Callback-кнопками.
+			/// </summary>
+			public const string Event = "message_event";
+
+			/// <summary>
 			/// Статус набора текста.
 			/// </summary>
 			public const string TypingState = "message_typing_state";
@@ -243,6 +248,22 @@ namespace VkBotCore.Callback
 				/// </summary>
 				public const string Delete = "market_comment_delete";
 			}
+
+			/// <summary>
+			/// События заказов.
+			/// </summary>
+			public static class Order
+			{
+				/// <summary>
+				/// Новый заказ.
+				/// </summary>
+				public const string New = "market_order_new";
+
+				/// <summary>
+				/// Редактирование заказа.
+				/// </summary>
+				public const string Edit = "market_order_edit";
+			}
 		}
 
 		/// <summary>
@@ -323,6 +344,22 @@ namespace VkBotCore.Callback
 			/// Событие в VK Mini Apps.
 			/// </summary>
 			public const string Payload = "app_payload";
+		}
+
+		/// <summary>
+		/// События отметок "Мне нравится".
+		/// </summary>
+		public static class Like
+		{
+			/// <summary>
+			/// Событие о новой отметке.
+			/// </summary>
+			public const string Add = "like_add";
+
+			/// <summary>
+			/// Событие о снятии отметки.
+			/// </summary>
+			public const string Remove = "like_remove";
 		}
 	}
 

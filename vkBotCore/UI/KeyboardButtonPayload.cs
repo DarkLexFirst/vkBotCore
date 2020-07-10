@@ -18,18 +18,43 @@ namespace VkBotCore.UI
 			}
 		}
 
+		[JsonProperty("button_type")]
+		public string ButtonType { get; set; }
+
 		public string Payload { get; set; }
+
+		[JsonProperty]
+		private string payload { get; set; } // HOTFIX FOR CALLBACK BUTTONS!!!
 
 		public string Serialize()
 		{
-			return JsonConvert.SerializeObject(this);
+			var settings = new JsonSerializerSettings();
+			settings.NullValueHandling = NullValueHandling.Ignore;
+
+			return JsonConvert.SerializeObject(this, settings);
 		}
 
 		public static KeyboardButtonPayload Deserialize(string json)
 		{
 			try
 			{
-				return JsonConvert.DeserializeObject<KeyboardButtonPayload>(json);
+				// HOTFIX FOR CALLBACK BUTTONS!!!
+				var settings = new JsonSerializerSettings();
+				settings.NullValueHandling = NullValueHandling.Ignore;
+
+				var result = JsonConvert.DeserializeObject<KeyboardButtonPayload>(json, settings);
+				if(!string.IsNullOrEmpty(result.payload))
+				{
+					var buttonType = result.ButtonType;
+					result = JsonConvert.DeserializeObject<KeyboardButtonPayload>(result.payload, settings);
+					result.ButtonType = buttonType;
+				}
+
+				return result;
+				// HOTFIX FOR CALLBACK BUTTONS!!!
+
+
+				//return JsonConvert.DeserializeObject<KeyboardButtonPayload>(json);
 			}
 			catch
 			{

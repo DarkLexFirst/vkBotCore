@@ -24,16 +24,16 @@ namespace TestPlugin
         {
             //клавиатура с наивысшим приоритетом, коорая обновляется при каждой отправке сообщения ботом
             var keyboard = chat.BaseKeyboard = new Keyboard(null) { Id = "main_keyboard" };
-            keyboard.Add(new KeyboardTextButton("Menu", (c, u, b) => c.SendKeyboardAsync("menu")));
+            keyboard.Add(new KeyboardTextButton("Menu", (c, u, b, p) => c.SendKeyboardAsync("menu")));
 
             //вспомогательное меню с привязкой по Id
             var childKeyboard = new Keyboard("Menu opened") { Id = "menu", InMessage = true };
-            childKeyboard.Add(new KeyboardTextButton("Test1", (c, u, b) => c.SendMessageAsync("test1!")) { Color = ButtonColor.Red });
-            childKeyboard.Add(new KeyboardTextButton("Test2", (c, u, b) => c.SendMessageAsync("test2!")) { Color = ButtonColor.Red });
+            childKeyboard.Add(new KeyboardTextButton("Test1", (c, u, b, p) => c.SendMessageAsync("test1!")) { Color = ButtonColor.Red });
+            childKeyboard.Add(new KeyboardTextButton("Test2", (c, u, b, p) => c.SendMessageAsync("test2!")) { Color = ButtonColor.Red });
             chat.AddKeyboard(childKeyboard);
             
             //обработчик стандартной кнопки Начать
-            chat.AddKeyboard(new StartKeyboard((c, u, b) => c.SendMessageAsync("start")));
+            chat.AddKeyboard(new StartKeyboard((c, u, b, p) => c.SendMessageAsync("start")));
         }
 
         [Command(IsHidden = true)]
@@ -104,9 +104,9 @@ namespace TestPlugin
             if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("test") { OneTime = true };
-                k.Add(new KeyboardTextButton("test button 1", (c, u, b) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Red });
-                k.AddOnNewLine(new KeyboardTextButton("test button 2", (c, u, p) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
-                k.Add(new KeyboardTextButton("test button 3", (c, u, b) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Blue });
+                k.Add(new KeyboardTextButton("test button 1", (c, u, b, p) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Red });
+                k.AddOnNewLine(new KeyboardTextButton("test button 2", (c, u, b, p) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
+                k.Add(new KeyboardTextButton("test button 3", (c, u, b, p) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Blue });
                 context.Chat.SendKeyboardAsync(k);
             }
         }
@@ -117,7 +117,7 @@ namespace TestPlugin
             if (context.Sender.IsAppAdmin)
             {
                 var k = new Keyboard("test");
-                k.Add(new KeyboardTextButton("test button 1", (c, u, b) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
+                k.Add(new KeyboardTextButton("test button 1", (c, u, b, p) => c.SendMessageAsync("Used by " + u.GetMentionLine())) { Color = ButtonColor.Green });
                 context.Chat.SendKeyboardAsync(k);
             }
         }

@@ -10,7 +10,7 @@ namespace VkBotCore.UI
 	{
 		private const string StartCommand = "start";
 
-		public StartKeyboard(Action<BaseChat, User, KeyboardTextButton> action) : base(null)
+		public StartKeyboard(Action<BaseChat, User, KeyboardTextButton, KeyboardButtonPayload> action) : base(null)
 		{
 			Id = StartCommand;
 			Add(new KeyboardTextButton("Старт", action) { Id = StartCommand });

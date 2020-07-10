@@ -42,6 +42,8 @@ namespace VkBotCore
 
 			_chatsCache = new ConcurrentDictionary<long, BaseChat>();
 			_usersCache = new ConcurrentDictionary<long, IUser>();
+
+			VkApiVersion.SetVersion(5, 120); //VERSION HOTFIX
 		}
 
 		internal void Initialize()

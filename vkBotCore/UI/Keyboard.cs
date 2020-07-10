@@ -81,16 +81,29 @@ namespace VkBotCore.UI
 			return keyboard;
 		}
 
-		internal void TryInvokeButton(BaseChat chat, User user, string buttonId)
+		internal void TryInvokeButton(BaseChat chat, User user, KeyboardButtonPayload payload, string eventId)
 		{
-			if (buttonId == null) return;
+			if (payload.ButtonId == null) return;
 			foreach (var line in _buttons)
 			{
-				var button = line.FirstOrDefault(b => b.Id == buttonId);
+				var button = line.FirstOrDefault(b => b.Id == payload.ButtonId);
 				if (button == null) continue;
 
 				if (button is KeyboardTextButton textButton)
-					textButton.Action?.Invoke(chat, user, textButton);
+				{
+					textButton.Action?.Invoke(chat, user, textButton, payload);
+				}
+				else if (button is KeyboardCallbackButton callbackButton)
+				{
+					var eventData = callbackButton.Action?.Invoke(chat, user, callbackButton, payload);
+					if (!string.IsNullOrEmpty(eventId))
+					{
+						chat.VkApi.MessageHandler.SendMessageEventAnswerAsync(chat.PeerId,
+							eventId,
+							user.Id,
+							eventData);
+					}
+				}
 			}
 		}
 

@@ -66,6 +66,27 @@ namespace VkBotCore.Callback
 								}
 								break;
 							}
+							case CallbackReceive.Message.Event:
+							{
+								//TODO
+								var userId = updates.Object["user_id"].ToObject<long>();
+								var peerId = updates.Object["peer_id"].ToObject<long>();
+								var eventId = updates.Object["event_id"].ToObject<string>();
+								var payload = updates.Object["payload"].ToString();
+
+								IUser user = vkApi.GetUser(userId);
+
+								if (user is User _user)
+								{
+									BaseChat chat = vkApi.GetChat(peerId);
+
+									lock (chat)
+									{
+										vkApi.MessageHandler.ClickButton(chat, _user, eventId, payload);
+									}
+								}
+								break;
+							}
 						}
 					}
 					catch (Exception e)
