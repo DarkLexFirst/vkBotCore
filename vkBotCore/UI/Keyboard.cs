@@ -81,7 +81,7 @@ namespace VkBotCore.UI
 			return keyboard;
 		}
 
-		internal void TryInvokeButton(BaseChat chat, User user, KeyboardButtonPayload payload, string eventId)
+		internal void TryInvokeButton(BaseChat chat, User user, KeyboardButtonPayload payload)
 		{
 			if (payload.ButtonId == null) return;
 			foreach (var line in _buttons)
@@ -96,10 +96,10 @@ namespace VkBotCore.UI
 				else if (button is KeyboardCallbackButton callbackButton)
 				{
 					var eventData = callbackButton.Action?.Invoke(chat, user, callbackButton, payload);
-					if (!string.IsNullOrEmpty(eventId))
+					if (!string.IsNullOrEmpty(payload.EventId))
 					{
 						chat.VkApi.MessageHandler.SendMessageEventAnswerAsync(chat.PeerId,
-							eventId,
+							payload.EventId,
 							user.Id,
 							eventData);
 					}

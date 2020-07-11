@@ -13,17 +13,14 @@ namespace VkBotCore.UI
 
 	public class ButtonClickEventArgs : GetMessageEventArgs<User>
 	{
-		public string EventId { get; set; }
-
 		public KeyboardButtonPayload Payload { get; set; }
 
 		public ButtonClickEventArgs(BaseChat chat, User sender, string message, KeyboardButtonPayload payload, Message messageData) : base(chat, sender, message, messageData)
 		{
 			Payload = payload;
 		}
-		public ButtonClickEventArgs(BaseChat chat, User sender, string eventId, KeyboardButtonPayload payload) : base(chat, sender, null, null)
+		public ButtonClickEventArgs(BaseChat chat, User sender, KeyboardButtonPayload payload) : base(chat, sender, null, null)
 		{
-			EventId = eventId;
 			Payload = payload;
 		}
 	}

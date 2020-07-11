@@ -26,6 +26,9 @@ namespace VkBotCore.UI
 		[JsonProperty]
 		private string payload { get; set; } // HOTFIX FOR CALLBACK BUTTONS!!!
 
+		[JsonIgnore]
+		public string EventId { get; set; }
+
 		public string Serialize()
 		{
 			var settings = new JsonSerializerSettings();
