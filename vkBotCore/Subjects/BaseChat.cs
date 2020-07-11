@@ -165,14 +165,14 @@ namespace VkBotCore.Subjects
 				_cachedKeyboards[keyboard.Id] = keyboard;
 		}
 
-		public void InvokeButton(User user, KeyboardButtonPayload payload, string eventId)
+		public void InvokeButton(User user, KeyboardButtonPayload payload)
 		{
 			var keyboardId = payload.KeyboardId;
 			var buttonId = payload.ButtonId;
 
 			if (BaseKeyboard?.Id == keyboardId)
 			{
-				BaseKeyboard.TryInvokeButton(this, user, payload, eventId);
+				BaseKeyboard.TryInvokeButton(this, user, payload);
 				return;
 			}
 			if (_cachedKeyboards.ContainsKey(keyboardId))
@@ -182,7 +182,7 @@ namespace VkBotCore.Subjects
 				if (keyboard.OneTime)
 					_cachedKeyboards.Remove(keyboardId);
 
-				keyboard.TryInvokeButton(this, user, payload, eventId);
+				keyboard.TryInvokeButton(this, user, payload);
 			}
 		}
 

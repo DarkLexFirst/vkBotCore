@@ -9,6 +9,7 @@ using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
+using VkNet.Exception;
 using VkNet.Model.RequestParams;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
@@ -145,7 +146,7 @@ namespace VkBotCore
 		public virtual void OnButtonClick(BaseChat chat, User user, string message, KeyboardButtonPayload payload, Message messageData)
 		{
 			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, message, payload, messageData))) return;
-			chat.InvokeButton(user, payload, null);
+			chat.InvokeButton(user, payload);
 		}
 
 		internal bool ClickButton(BaseChat chat, User user, string eventId, string payload)
@@ -157,8 +158,9 @@ namespace VkBotCore
 					var _payload = KeyboardButtonPayload.Deserialize(payload);
 					if (_payload != null && _payload.IsValid())
 					{
+						_payload.EventId = eventId;
 						if (_payload.GroupId == VkApi.GroupId || _payload.GroupId == 0)
-							OnButtonClick(chat, user, eventId, _payload);
+							OnButtonClick(chat, user, _payload);
 						return true;
 					}
 
@@ -171,11 +173,11 @@ namespace VkBotCore
 			return false;
 		}
 
-		public virtual void OnButtonClick(BaseChat chat, User user, string eventId, KeyboardButtonPayload payload)
+		public virtual void OnButtonClick(BaseChat chat, User user, KeyboardButtonPayload payload)
 		{
-			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, eventId, payload)))
+			if (!OnButtonClick(new ButtonClickEventArgs(chat, user, payload)))
 				return;
-			chat.InvokeButton(user, payload, eventId);
+			chat.InvokeButton(user, payload);
 		}
 
 		public void SendMessage(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
@@ -309,6 +311,7 @@ namespace VkBotCore
 
 				await VkApi.CallAsync("messages.sendMessageEventAnswer", parameters);
 			}
+			catch (ParameterMissingOrInvalidException) { }
 			catch (Exception e)
 			{
 				if (!BaseChat.IsUserConversation(peerId))
