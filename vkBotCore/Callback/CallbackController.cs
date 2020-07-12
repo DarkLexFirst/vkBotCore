@@ -74,7 +74,6 @@ namespace VkBotCore.Callback
 							case CallbackReceive.Message.Event:
 							{
 								var msgEvent = MessageEvent.FromJson(response);
-								Console.WriteLine($"< {msgEvent.EventId}");
 
 								IUser user = vkApi.GetUser(msgEvent.UserId.Value);
 
