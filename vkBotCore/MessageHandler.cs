@@ -293,12 +293,13 @@ namespace VkBotCore
 			});
 		}
 
-		public async Task SendMessageEventAnswerAsync(string eventId, long userId, long peerId, EventData eventData) //TODO
+		public async Task SendMessageEventAnswerAsync(string eventId, long userId, long peerId, EventData eventData)
 		{
 			try
 			{
 				await VkApi.Messages.SendMessageEventAnswerAsync(eventId, userId, peerId, eventData);
 			}
+			catch (ParameterMissingOrInvalidException) { } //HOTFIX catch an invalid eventId exception
 			catch (Exception e)
 			{
 				if (!BaseChat.IsUserConversation(peerId))

@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using VkBotCore.Subjects;
+using VkNet.Model.GroupUpdate;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
 
@@ -51,15 +52,19 @@ namespace VkBotCore.Callback
 						Core.PluginManager.PluginCallbackHandler(ref updates, vkApi);
 						if (updates == null) return;
 
+						var response = new VkResponse(updates.Object);
+
 						switch (updates.Type)
 						{
 							case CallbackReceive.Message.New:
 							{
-								var msg = Message.FromJson(new VkResponse(updates.Object));
+								var msg = Message.FromJson(response);
+
 								if (msg.Date.HasValue && (DateTime.UtcNow - msg.Date.Value).TotalSeconds > _messageResendBlockTime) return;
 
 								IUser user = vkApi.GetUser(msg.FromId.Value);
 								BaseChat chat = vkApi.GetChat(msg.PeerId.Value);
+
 								lock (chat)
 								{
 									vkApi.MessageHandler.OnMessage(user, msg.Text, chat, msg);
@@ -68,21 +73,18 @@ namespace VkBotCore.Callback
 							}
 							case CallbackReceive.Message.Event:
 							{
-								//TODO
-								var userId = updates.Object["user_id"].ToObject<long>();
-								var peerId = updates.Object["peer_id"].ToObject<long>();
-								var eventId = updates.Object["event_id"].ToObject<string>();
-								var payload = updates.Object["payload"].ToString();
+								var msgEvent = MessageEvent.FromJson(response);
+								Console.WriteLine($"< {msgEvent.EventId}");
 
-								IUser user = vkApi.GetUser(userId);
+								IUser user = vkApi.GetUser(msgEvent.UserId.Value);
 
 								if (user is User _user)
 								{
-									BaseChat chat = vkApi.GetChat(peerId);
+									BaseChat chat = vkApi.GetChat(msgEvent.PeerId.Value);
 
 									lock (chat)
 									{
-										vkApi.MessageHandler.ClickButton(chat, _user, eventId, payload);
+										vkApi.MessageHandler.ClickButton(chat, _user, msgEvent.EventId, msgEvent.Payload);
 									}
 								}
 								break;
