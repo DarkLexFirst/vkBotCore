@@ -98,10 +98,7 @@ namespace VkBotCore.UI
 					var eventData = callbackButton.Action?.Invoke(chat, user, callbackButton, payload);
 					if (!string.IsNullOrEmpty(payload.EventId))
 					{
-						chat.VkApi.MessageHandler.SendMessageEventAnswerAsync(chat.PeerId,
-							payload.EventId,
-							user.Id,
-							eventData);
+						chat.SendMessageEventAnswerAsync(user, payload.EventId, eventData);
 					}
 				}
 			}

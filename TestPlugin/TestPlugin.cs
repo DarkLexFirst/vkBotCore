@@ -8,6 +8,8 @@ using VkBotCore.UI;
 using VkBotCore.VKPay;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
+using EventData = VkNet.Model.EventData;
+using VkNet.Enums.SafetyEnums;
 
 namespace TestPlugin
 {
@@ -132,9 +134,33 @@ namespace TestPlugin
                 k.Add(new KeyboardLinkButton("Click me", "https://github.com/DarkLexFirst/vkBotCore"));
                 context.Chat.SendKeyboardAsync(k);
             }
-        }
+		}
 
-        [Command(IsHidden = true)]
+		[Command(IsHidden = true)]
+		private static void UITest4(CommandContext context)
+		{
+			if (context.Sender.IsAppAdmin)
+			{
+				var k = new Keyboard("test") { InMessage = true };
+				k.Add(new KeyboardCallbackButton("Action void", (c, u, kb, p) => Console.WriteLine("action answer")));
+
+				k.Add(new KeyboardCallbackButton("Snackbar", (c, u, kb, p) => new EventData()
+				{
+					Type = MessageEventType.SnowSnackbar,
+					Text = "Snackbar answer"
+				}));
+
+				k.Add(new KeyboardCallbackButton("Link", (c, u, kb, p) => 
+				new EventData()
+				{
+					Type = MessageEventType.OpenLink,
+					Link = new Uri("https://github.com/DarkLexFirst/vkBotCore")
+				}));
+				context.Chat.SendKeyboardAsync(k);
+			}
+		}
+
+		[Command(IsHidden = true)]
         private static void VkPayTest(CommandContext context)
         {
             if (context.Sender.IsAppAdmin)

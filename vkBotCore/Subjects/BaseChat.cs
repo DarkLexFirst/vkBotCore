@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VkBotCore.UI;
 using Message = VkNet.Model.Message;
+using EventData = VkNet.Model.EventData;
 
 namespace VkBotCore.Subjects
 {
@@ -98,6 +99,14 @@ namespace VkBotCore.Subjects
 		public virtual void SendMessageWithPool(object obj, bool disableMentions = false)
 		{
 			SendMessageWithPool(obj?.ToString(), disableMentions);
+		}
+
+		/// <summary>
+		/// Отправляет ответ на событие сообщения. (Асинхронная отправка)
+		/// </summary>
+		public async Task SendMessageEventAnswerAsync(User user, string eventId, EventData eventData)
+		{
+			await VkApi.MessageHandler.SendMessageEventAnswerAsync(eventId, user.Id, PeerId, eventData);
 		}
 
 		/// <summary>

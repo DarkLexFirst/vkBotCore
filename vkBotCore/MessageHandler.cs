@@ -13,6 +13,7 @@ using VkNet.Exception;
 using VkNet.Model.RequestParams;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
+using EventData = VkNet.Model.EventData;
 
 namespace VkBotCore
 {
@@ -292,26 +293,12 @@ namespace VkBotCore
 			});
 		}
 
-
-
-		public async Task SendMessageEventAnswerAsync(long peerId, string eventId, long userId, string eventData) //TODO
+		public async Task SendMessageEventAnswerAsync(string eventId, long userId, long peerId, EventData eventData) //TODO
 		{
 			try
 			{
-				var parameters = new VkParameters()
-				{
-					{ "event_id", eventId },
-					{ "user_id", userId },
-					{ "peer_id", peerId },
-					{ "event_data", eventData },
-				};
-
-				//if (!string.IsNullOrEmpty(eventData))
-				//	parameters.Add("event_data", eventData.ToString());
-
-				await VkApi.CallAsync("messages.sendMessageEventAnswer", parameters);
+				await VkApi.Messages.SendMessageEventAnswerAsync(eventId, userId, peerId, eventData);
 			}
-			catch (ParameterMissingOrInvalidException) { }
 			catch (Exception e)
 			{
 				if (!BaseChat.IsUserConversation(peerId))
