@@ -29,10 +29,12 @@ namespace VkBotCore.UI
 
 		public MessageKeyboardButton GetButton(Keyboard keyboard, long groupId)
 		{
-			var action = new MessageKeyboardButtonAction();
-			action.Type = KeyboardButtonActionType.OpenLink;
-			action.Label = Label;
-			action.Link = new Uri(Link);
+			var action = new MessageKeyboardButtonAction()
+			{
+				Type = KeyboardButtonActionType.OpenLink,
+				Label = Label,
+				Link = new Uri(Link)
+			};
 
 			return new MessageKeyboardButton() { Action = action };
 		}

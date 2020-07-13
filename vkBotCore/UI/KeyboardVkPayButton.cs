@@ -20,9 +20,11 @@ namespace VkBotCore.UI
 
 		public MessageKeyboardButton GetButton(Keyboard keyboard, long groupId)
 		{
-			var action = new MessageKeyboardButtonAction();
-			action.Type = KeyboardButtonActionType.VkPay;
-			action.Hash = VkPay.ToString();
+			var action = new MessageKeyboardButtonAction()
+			{
+				Type = KeyboardButtonActionType.VkPay,
+				Hash = VkPay.ToString()
+			};
 
 			return new MessageKeyboardButton() { Action = action };
 		}

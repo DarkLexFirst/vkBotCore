@@ -11,8 +11,8 @@ namespace VkBotCore.UI
 	public abstract class BaseCallbackButton : IKeyboardButton
 	{
 		public string Id { get; set; }
-		
-		private CallbackButtonType ButtonType { get; set; }
+
+		private CallbackButtonType _buttonType;
 
 		/// <summary>
 		/// Текст кнопки.
@@ -31,13 +31,13 @@ namespace VkBotCore.UI
 
 		public BaseCallbackButton(CallbackButtonType buttonType, string label)
 		{
-			ButtonType = buttonType;
+			_buttonType = buttonType;
 			Label = label;
 		}
 
 		public BaseCallbackButton(CallbackButtonType buttonType, string id, string label)
 		{
-			ButtonType = buttonType;
+			_buttonType = buttonType;
 			Id = id;
 			Label = label;
 		}
@@ -58,28 +58,25 @@ namespace VkBotCore.UI
 					break;
 			}
 
-			var action = new MessageKeyboardButtonAction();
-			action.Label = Label;
+			var action = new MessageKeyboardButtonAction() { Label = Label };
 
-			switch (ButtonType)
+			switch (_buttonType)
 			{
 				case CallbackButtonType.Callback:
-					action.Type = KeyboardButtonActionType.RegisterPossibleValue("callback");
+					action.Type = KeyboardButtonActionType.Callback;
 					break;
 				case CallbackButtonType.Text:
 					action.Type = KeyboardButtonActionType.Text;
 					break;
 			}
 
-			var payload = new KeyboardButtonPayload()
+			action.Payload = new KeyboardButtonPayload()
 			{
 				GroupId = groupId,
 				KeyboardId = keyboard.Id,
 				ButtonId = Id,
 				Payload = Payload
-			};
-
-			action.Payload = payload.Serialize();
+			}.Serialize();
 
 			return new MessageKeyboardButton() { Color = color, Action = action };
 		}
