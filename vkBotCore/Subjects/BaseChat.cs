@@ -104,7 +104,7 @@ namespace VkBotCore.Subjects
 		/// <summary>
 		/// Отправляет ответ на событие сообщения. (Асинхронная отправка)
 		/// </summary>
-		public async Task SendMessageEventAnswerAsync(User user, string eventId, EventData eventData)
+		public async Task SendMessageEventAnswerAsync(User user, EventId eventId, EventData eventData)
 		{
 			await VkApi.MessageHandler.SendMessageEventAnswerAsync(eventId, user.Id, PeerId, eventData);
 		}

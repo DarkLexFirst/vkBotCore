@@ -84,6 +84,7 @@ namespace VkBotCore.UI
 		internal void TryInvokeButton(BaseChat chat, User user, KeyboardButtonPayload payload)
 		{
 			if (payload.ButtonId == null) return;
+
 			foreach (var line in _buttons)
 			{
 				var button = line.FirstOrDefault(b => b.Id == payload.ButtonId);
@@ -101,6 +102,8 @@ namespace VkBotCore.UI
 						chat.SendMessageEventAnswerAsync(user, payload.EventId, eventData);
 					}
 				}
+
+				return;
 			}
 		}
 

@@ -27,7 +27,7 @@ namespace VkBotCore.UI
 		private string payload { get; set; } // HOTFIX FOR CALLBACK BUTTONS!!!
 
 		[JsonIgnore]
-		public string EventId { get; set; }
+		public EventId EventId { get; internal set; }
 
 		public string Serialize()
 		{
@@ -68,6 +68,31 @@ namespace VkBotCore.UI
 		public bool IsValid()
 		{
 			return KeyboardId != null && ButtonId != null;
+		}
+	}
+
+	public sealed class EventId
+	{
+		private string _value;
+
+		internal EventId(string value)
+		{
+			_value = value;
+		}
+
+		public static implicit operator string(EventId value)
+		{
+			return value._value;
+		}
+
+		public void Clear()
+		{
+			_value = null;
+		}
+
+		public override string ToString()
+		{
+			return _value;
 		}
 	}
 }

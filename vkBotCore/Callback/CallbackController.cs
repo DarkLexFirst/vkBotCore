@@ -83,7 +83,7 @@ namespace VkBotCore.Callback
 
 									lock (chat)
 									{
-										vkApi.MessageHandler.ClickButton(chat, _user, msgEvent.EventId, msgEvent.Payload);
+										vkApi.MessageHandler.ClickButton(chat, _user, new UI.EventId(msgEvent.EventId), msgEvent.Payload);
 									}
 								}
 								break;
