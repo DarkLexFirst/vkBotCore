@@ -181,7 +181,7 @@ namespace VkBotCore
 			chat.InvokeButton(user, payload);
 		}
 
-		public void SendMessage(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
+		public void SendMessage(long peerId, string message, Keyboard keyboard = null, bool disableMentions = false)
 		{
 			SendMessage(new MessagesSendParams
 			{
@@ -193,7 +193,7 @@ namespace VkBotCore
 			});
 		}
 
-		public async Task SendMessageAsync(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
+		public async Task SendMessageAsync(long peerId, string message, Keyboard keyboard = null, bool disableMentions = false)
 		{
 			await SendMessageAsync(new MessagesSendParams
 			{
@@ -205,7 +205,7 @@ namespace VkBotCore
 			});
 		}
 
-		public void SendMessageWithPool(string message, long peerId, Keyboard keyboard = null, bool disableMentions = false)
+		public void SendMessageWithPool(long peerId, string message, Keyboard keyboard = null, bool disableMentions = false)
 		{
 			SendMessageWithPool(new MessagesSendParams
 			{
@@ -223,7 +223,7 @@ namespace VkBotCore
 			{
 				VkApi.Messages.Send(message);
 			}
-			catch (Exception e)
+			catch (ConversationAccessDeniedException e)
 			{
 				long peerId = message.PeerId.Value;
 				if (!BaseChat.IsUserConversation(peerId))
@@ -239,7 +239,7 @@ namespace VkBotCore
 		{
 			try
 			{
-				await VkApi.Messages.SendAsync(message);
+				Console.WriteLine(await VkApi.Messages.SendAsync(message));
 			}
 			catch (Exception e)
 			{
@@ -260,39 +260,6 @@ namespace VkBotCore
 				_poolTimer.Start();
 		}
 
-		public void SendKeyboard(Keyboard keyboard, long peerId)
-		{
-			SendMessage(new MessagesSendParams
-			{
-				RandomId = GetRandomId(),
-				PeerId = peerId,
-				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
-			});
-		}
-
-		public async Task SendKeyboardAsync(Keyboard keyboard, long peerId)
-		{
-			await SendMessageAsync(new MessagesSendParams
-			{
-				RandomId = GetRandomId(),
-				PeerId = peerId,
-				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
-			});
-		}
-
-		public void SendKeyboardWithPool(Keyboard keyboard, long peerId)
-		{
-			SendMessageWithPool(new MessagesSendParams
-			{
-				RandomId = GetRandomId(),
-				PeerId = peerId,
-				Message = keyboard.Message,
-				Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
-			});
-		}
-
 		public async Task SendMessageEventAnswerAsync(EventId eventId, long userId, long peerId, EventData eventData)
 		{
 			try
@@ -308,7 +275,7 @@ namespace VkBotCore
 
 				await VkApi.Messages.SendMessageEventAnswerAsync(_eventId, userId, peerId, eventData);
 			}
-			catch (Exception e)
+			catch (ConversationAccessDeniedException e)
 			{
 				if (!BaseChat.IsUserConversation(peerId))
 				{

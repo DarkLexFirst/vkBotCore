@@ -58,7 +58,7 @@ namespace VkBotCore.Subjects
 		public virtual void SendMessage(string message, bool disableMentions = false)
 		{
 			if (!string.IsNullOrEmpty(message))
-				VkApi.MessageHandler.SendMessage(message, PeerId, BaseKeyboard, disableMentions);
+				VkApi.MessageHandler.SendMessage(PeerId, message, BaseKeyboard, disableMentions);
 		}
 
 		/// <summary>
@@ -66,7 +66,7 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public virtual async Task SendMessageAsync(string message, bool disableMentions = false)
 		{
-			await VkApi.MessageHandler.SendMessageAsync(message, PeerId, BaseKeyboard, disableMentions);
+			await VkApi.MessageHandler.SendMessageAsync(PeerId, message, BaseKeyboard, disableMentions);
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public virtual void SendMessageWithPool(string message, bool disableMentions = false)
 		{
-			VkApi.MessageHandler.SendMessageWithPool(message, PeerId, BaseKeyboard, disableMentions);
+			VkApi.MessageHandler.SendMessageWithPool(PeerId, message, BaseKeyboard, disableMentions);
 		}
 
 		/// <summary>
@@ -142,7 +142,7 @@ namespace VkBotCore.Subjects
 		public void SendKeyboard(Keyboard keyboard)
 		{
 			AddKeyboard(keyboard);
-			VkApi.MessageHandler.SendKeyboard(keyboard, PeerId);
+			VkApi.MessageHandler.SendMessage(PeerId, keyboard.Message, keyboard);
 		}
 
 		/// <summary>
@@ -151,7 +151,7 @@ namespace VkBotCore.Subjects
 		public async Task SendKeyboardAsync(Keyboard keyboard)
 		{
 			AddKeyboard(keyboard);
-			await VkApi.MessageHandler.SendKeyboardAsync(keyboard, PeerId);
+			await VkApi.MessageHandler.SendMessageAsync(PeerId, keyboard.Message, keyboard);
 		}
 
 		/// <summary>
@@ -160,7 +160,7 @@ namespace VkBotCore.Subjects
 		public void SendKeyboardWithPool(Keyboard keyboard)
 		{
 			AddKeyboard(keyboard);
-			VkApi.MessageHandler.SendKeyboardWithPool(keyboard, PeerId);
+			VkApi.MessageHandler.SendMessageWithPool(PeerId, keyboard.Message, keyboard);
 		}
 
 		/// <summary>
