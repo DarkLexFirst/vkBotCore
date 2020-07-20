@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using ApiAuthParams = VkNet.Model.ApiAuthParams;
@@ -17,13 +16,17 @@ namespace VkBotCore
 			var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
 			if (accesToken != null)
 				Authorize(new ApiAuthParams { AccessToken = accesToken });
-			Initialize();
+		}
+
+		internal override void Initialize()
+		{
+			base.Initialize();
 			LoadAll();
 		}
 
 		public void LoadAll()
 		{
-			foreach (var a in Core.Configuration.GetSection("Config:Groups").GetChildren())
+			foreach (var a in Core.Configuration.Base.GetSection("Config:Groups").GetChildren())
 				Get(long.Parse(a.Key));
 		}
 
@@ -65,7 +68,7 @@ namespace VkBotCore
 
 		public VkCoreApiBase[] GetAvailableApis(string _namespace)
 		{
-			var apis = _vkApi.Values.Where(a => a.AvailableNamespaces.Contains(_namespace));
+			var apis = _vkApi.Values.Where(a => a.AvailableNamespaces.Contains(_namespace) || a.AvailableNamespaces.Length == 0);
 			if (AvailableNamespaces.Contains(_namespace))
 			{
 				var _apis = apis.ToList();

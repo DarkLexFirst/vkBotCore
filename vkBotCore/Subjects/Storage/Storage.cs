@@ -40,7 +40,7 @@ namespace VkBotCore.Subjects
 					if (_storage.ContainsKey(key))
 						return _storage[key];
 					var value = Get(key);
-					_storage.Add(key, value);
+					_storage.TryAdd(key, value);
 					return value;
 				}
 			}
@@ -107,7 +107,7 @@ namespace VkBotCore.Subjects
 				}
 				else
 				{
-					_storage.Add(key, value);
+					_storage.TryAdd(key, value);
 				}
 
 				if (value == null)
@@ -131,7 +131,7 @@ namespace VkBotCore.Subjects
 		public T Get<T>(string key) where T : class
 		{
 			if (!_storage.ContainsKey(key))
-				_storage.Add(key, Get(key));
+				_storage.TryAdd(key, Get(key));
 			return _storage.Get<T>(key);
 		}
 
@@ -141,7 +141,7 @@ namespace VkBotCore.Subjects
 		public T? GetValue<T>(string key) where T : struct
 		{
 			if (!_storage.ContainsKey(key))
-				_storage.Add(key, Get(key));
+				_storage.TryAdd(key, Get(key));
 			return _storage.GetValue<T>(key);
 		}
 

@@ -4,7 +4,9 @@
 	{
 		Block = short.MinValue,
 		None = 0,
-		Admin = 1000,
+		Modarator = 100,
+		Editor = 1000,
+		Admin = 10000,
 		Unlimited = short.MaxValue
 	}
 }

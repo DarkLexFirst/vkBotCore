@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using VkBotCore.Plugins;
 using VkBotCore.Plugins.Attributes;
 using VkBotCore.Subjects;
+using VkBotCore.Utils;
 
 namespace VkBotCore
 {
@@ -24,14 +25,16 @@ namespace VkBotCore
 
 		public PluginManager PluginManager { get; set; }
 
-		public IConfiguration Configuration { get; private set; }
+		public CoreConfiguration Configuration { get; set; }
+
 		public VkCoreApi VkApi { get; private set; }
 
 		public BotCore(IConfiguration configuration)
 		{
-			Configuration = configuration;
+			Configuration = new CoreConfiguration(configuration);
 
 			VkApi = new VkCoreApi(this);
+			VkApi.Initialize();
 
 			Log = new LogChat(VkApi);
 

@@ -4,14 +4,11 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
-using Newtonsoft.Json;
-using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkNet.Enums.SafetyEnums;
 using VkNet.Exception;
 using VkNet.Model.RequestParams;
-using VkNet.Utils;
 using Message = VkNet.Model.Message;
 using EventData = VkNet.Model.EventData;
 
@@ -239,7 +236,7 @@ namespace VkBotCore
 		{
 			try
 			{
-				Console.WriteLine(await VkApi.Messages.SendAsync(message));
+				await VkApi.Messages.SendAsync(message);
 			}
 			catch (Exception e)
 			{
@@ -247,7 +244,6 @@ namespace VkBotCore
 				if (!BaseChat.IsUserConversation(peerId))
 				{
 					VkApi.GetChat<Chat>(peerId).OnKick(null);
-					return;
 				}
 				throw e;
 			}
@@ -260,27 +256,50 @@ namespace VkBotCore
 				_poolTimer.Start();
 		}
 
-		public async Task SendMessageEventAnswerAsync(EventId eventId, long userId, long peerId, EventData eventData)
+		public async Task<bool> SendMessageEventAnswerAsync(EventId eventId, long userId, long peerId, EventData eventData)
 		{
 			try
 			{
 				string _eventId;
 				lock (eventId)
 				{
-					if (string.IsNullOrEmpty(eventId)) return;
+					if (string.IsNullOrEmpty(eventId)) return false;
 
 					_eventId = eventId;
 					eventId.Clear();
 				}
 
-				await VkApi.Messages.SendMessageEventAnswerAsync(_eventId, userId, peerId, eventData);
+				return await VkApi.Messages.SendMessageEventAnswerAsync(_eventId, userId, peerId, eventData);
 			}
 			catch (ConversationAccessDeniedException e)
 			{
 				if (!BaseChat.IsUserConversation(peerId))
 				{
 					VkApi.GetChat<Chat>(peerId).OnKick(null);
-					return;
+					return false;
+				}
+				throw e;
+			}
+		}
+
+		public async Task<bool> EditAsync(long peerId, long messageId, string message, Keyboard keyboard = null)
+		{
+			try
+			{
+				return await VkApi.Messages.EditAsync(new MessageEditParams() 
+				{
+					PeerId = peerId,
+					ConversationMessageId = messageId,
+					Message = message,
+					Keyboard = keyboard.GetKeyboard(VkApi.GroupId)
+				});
+			}
+			catch (ConversationAccessDeniedException e)
+			{
+				if (!BaseChat.IsUserConversation(peerId))
+				{
+					VkApi.GetChat<Chat>(peerId).OnKick(null);
+					return false;
 				}
 				throw e;
 			}

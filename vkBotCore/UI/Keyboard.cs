@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using VkBotCore.Subjects;
 using VkNet.Model.Keyboard;
 
@@ -97,7 +96,7 @@ namespace VkBotCore.UI
 				else if (button is KeyboardCallbackButton callbackButton)
 				{
 					var eventData = callbackButton.Action?.Invoke(chat, user, callbackButton, payload);
-					if (!string.IsNullOrEmpty(payload.EventId))
+					if (!string.IsNullOrEmpty(payload.EventId?.ToString()))
 					{
 						chat.SendMessageEventAnswerAsync(user, payload.EventId, eventData);
 					}

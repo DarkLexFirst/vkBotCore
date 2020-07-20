@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using VkBotCore.Subjects;
 using VkBotCore.UI;
 using VkBotCore.Utils;
+using VkNet.Enums.SafetyEnums;
 using Message = VkNet.Model.Message;
 
 namespace VkBotCore.Subjects
@@ -251,9 +252,9 @@ namespace VkBotCore.Subjects
 			return users.Select(m => User.GetMentionLine(m, val));
 		}
 
-		public static IEnumerable<string> GetMentions(IEnumerable<User> users)
+		public static IEnumerable<string> GetMentions(IEnumerable<User> users, NameCase nameCase = null)
 		{
-			return users.Select(u => u.GetMentionLine());
+			return users.Select(u => u.GetMentionLine(nameCase));
 		}
 	}
 }

@@ -82,7 +82,7 @@ namespace VkBotCore.UI
 
 		public static implicit operator string(EventId value)
 		{
-			return value._value;
+			return value?._value;
 		}
 
 		public void Clear()

@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VkBotCore.Configuration;
 using VkBotCore.Utils;
+using VkNet.Enums;
+using VkNet.Enums.Filters;
+using VkNet.Enums.SafetyEnums;
 
 namespace VkBotCore.Subjects
 {
@@ -20,7 +21,18 @@ namespace VkBotCore.Subjects
 		/// </summary>
 		public long Id { get; set; }
 
+		/// <summary>
+		/// Пол.
+		/// </summary>
+		public Sex Sex { get; set; }
+
+		/// <summary>
+		/// Имя в именительном падеже.
+		/// </summary>
 		public string FirstName { get; set; }
+		/// <summary>
+		/// Фамилия в именительном падеже.
+		/// </summary>
 		public string LastName { get; set; }
 
 		/// <summary>
@@ -37,7 +49,10 @@ namespace VkBotCore.Subjects
 			get
 			{
 				if (IsAppAdmin) return (short) UserPermission.Unlimited;
-				return Storage.GetValue<short>(PermissionsTag) ?? 0;
+
+				var storagePermission = Storage.GetValue<short>(PermissionsTag) ?? 0;
+				var groupPermission = (short)VkApi.Group.GetUserPermissions(this);
+				return Math.Max(storagePermission, groupPermission);
 			}
 			set => Storage.SetValue(PermissionsTag, value); }
 
@@ -51,7 +66,10 @@ namespace VkBotCore.Subjects
 		{
 			VkApi = vkApi;
 			Id = id;
-			var u = GetApiUser();
+			var u = GetApiUser(ProfileFields.Sex);
+
+			Sex = u.Sex;
+
 			FirstName = u?.FirstName;
 			LastName = u?.LastName;
 
@@ -104,9 +122,9 @@ namespace VkBotCore.Subjects
 		/// <summary>
 		/// Возвращает строку упоминания.
 		/// </summary>
-		public string GetMentionLine()
+		public string GetMentionLine(NameCase nameCase = null)
 		{
-			return GetMentionLine(Id, FirstName);
+			return GetMentionLine(Id, GetUserFirstName(nameCase));
 		}
 
 		/// <summary>
@@ -117,15 +135,63 @@ namespace VkBotCore.Subjects
 			return id >= 0 ? $"[id{id}|{value ?? id.ToString()}]" : string.Empty;
 		}
 
-		public VkNet.Model.User GetApiUser()
+		/// <summary>
+		/// Имя в заданном падеже.
+		/// </summary>
+		public string GetUserFirstName(NameCase nameCase = null)
 		{
-			return GetApiUserById(VkApi, Id);
+			return GetUserFullName(nameCase).Item1;
 		}
 
-		public static VkNet.Model.User GetApiUserById(VkCoreApiBase vkApi, long id)
+		/// <summary>
+		/// Фамилия в заданном падеже.
+		/// </summary>
+		public string GetUserLastName(NameCase nameCase = null)
+		{
+			return GetUserFullName(nameCase).Item2;
+		}
+
+		private Dictionary<NameCase, (string, string)> _userNames = new Dictionary<NameCase, (string, string)>();
+		public (string, string) GetUserFullName(NameCase nameCase = null)
+		{
+			if (nameCase == null || nameCase == NameCase.Nom) return (FirstName, LastName);
+
+			if(_userNames.TryGetValue(nameCase, out (string, string) name))
+			{
+				return name;
+			}
+			else
+			{
+				var user = GetApiUser(nameCase: nameCase);
+				(string, string) _name;
+
+				if (nameCase == NameCase.Abl)
+					_name = (user.FirstNameAbl, user.LastNameAbl);
+				else if (nameCase == NameCase.Acc)
+					_name = (user.FirstNameAcc, user.LastNameAcc);
+				else if(nameCase == NameCase.Dat)
+					_name = (user.FirstNameDat, user.LastNameDat);
+				else if(nameCase == NameCase.Gen)
+					_name = (user.FirstNameGen, user.LastNameGen);
+				else if(nameCase == NameCase.Ins)
+					_name = (user.FirstNameIns, user.LastNameIns);
+				else
+					_name = (user.LastNameNom, user.LastNameNom);
+
+				_userNames.Add(nameCase, _name);
+				return _name;
+			}
+		}
+
+		public VkNet.Model.User GetApiUser(ProfileFields fields = null, NameCase nameCase = null)
+		{
+			return GetApiUserById(VkApi, Id, fields, nameCase);
+		}
+
+		public static VkNet.Model.User GetApiUserById(VkCoreApiBase vkApi, long id, ProfileFields fields = null, NameCase nameCase = null)
 		{
 			if (id <= 0) return null;
-			return vkApi.Users.Get(new long[] { id }).First();
+			return vkApi.Users.Get(new long[] { id }, fields, nameCase).First();
 		}
 
 		public static async Task<VkNet.Model.User> GetApiUserByIdAsync(VkCoreApiBase vkApi, long id)
