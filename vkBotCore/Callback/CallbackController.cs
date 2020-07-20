@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Diagnostics;
 using System.Threading;
 using VkBotCore.Subjects;
+using VkBotCore.Utils;
 using VkNet.Model.GroupUpdate;
 using VkNet.Utils;
 using Message = VkNet.Model.Message;
@@ -85,6 +85,23 @@ namespace VkBotCore.Callback
 									{
 										vkApi.MessageHandler.ClickButton(chat, _user, new UI.EventId(msgEvent.EventId), msgEvent.Payload);
 									}
+								}
+								break;
+							}
+							case CallbackReceive.Group.OfficersEdit:
+							{
+								var msgEvent = GroupOfficersEdit.FromJson(response);
+
+								var userId = msgEvent.UserId.Value;
+
+								vkApi.Group.Managers.Remove(userId);
+
+								var level = (int) msgEvent.LevelNew.Value;
+
+								if (level > 0)
+								{
+									var permissionLevel = (int)Math.Pow(10, level + 1);
+									vkApi.Group.Managers.Add(userId, (UserPermission)level);
 								}
 								break;
 							}

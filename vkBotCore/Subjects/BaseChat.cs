@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using VkBotCore.UI;
 using Message = VkNet.Model.Message;
@@ -34,7 +33,6 @@ namespace VkBotCore.Subjects
 		public static bool IsUserConversation(long peerId) => peerId < BasePeerId;
 
 		public const long BasePeerId = 2000000000;
-
 
 		private Dictionary<string, Keyboard> _cachedKeyboards;
 
@@ -102,11 +100,19 @@ namespace VkBotCore.Subjects
 		}
 
 		/// <summary>
+		/// Редактирует сообщение. (Асинхронная отправка)
+		/// </summary>
+		public async Task<bool> EditAsync(long messageId, string message, Keyboard keyboard = null)
+		{
+			return await VkApi.MessageHandler.EditAsync(PeerId, messageId, message, keyboard);
+		}
+
+		/// <summary>
 		/// Отправляет ответ на событие сообщения. (Асинхронная отправка)
 		/// </summary>
-		public async Task SendMessageEventAnswerAsync(User user, EventId eventId, EventData eventData)
+		public async Task<bool> SendMessageEventAnswerAsync(User user, EventId eventId, EventData eventData)
 		{
-			await VkApi.MessageHandler.SendMessageEventAnswerAsync(eventId, user.Id, PeerId, eventData);
+			return await VkApi.MessageHandler.SendMessageEventAnswerAsync(eventId, user.Id, PeerId, eventData);
 		}
 
 		/// <summary>

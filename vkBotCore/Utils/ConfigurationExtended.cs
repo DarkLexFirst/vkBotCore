@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace VkBotCore.Configuration
+namespace VkBotCore.Utils
 {
-	public static class ConfigurationAddon
+	public static class ConfigurationExtended
 	{
 		public static T[] GetArray<T>(this IConfiguration configuration, string key, T[] defaultValue = null)
 		{

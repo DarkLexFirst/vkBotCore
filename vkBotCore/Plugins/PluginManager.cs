@@ -1,20 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using VkBotCore.Plugins.Attributes;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
-using Microsoft.Extensions.Configuration;
 using VkBotCore.Plugins.Commands;
 using VkBotCore.Callback;
-using VkBotCore.Configuration;
 using VkBotCore.Subjects;
 using Message = VkNet.Model.Message;
 using VkBotCore.Utils;
@@ -186,21 +180,22 @@ namespace VkBotCore.Plugins
 
 			try
 			{
-				AssemblyName name = new AssemblyName(args.Name);
-				string assemblyPath = _currentPath + "\\" + name.Name + ".dll";
+				var name = new AssemblyName(args.Name);
+				string assemblyPath = _currentPath + "/" + name.Name + ".dll";
 				return Assembly.LoadFile(assemblyPath);
 			}
 			catch (Exception)
 			{
 				try
 				{
-					AssemblyName name = new AssemblyName(args.Name);
-					string assemblyPath = _currentPath + "\\" + name.Name + ".exe";
+					var name = new AssemblyName(args.Name);
+					string assemblyPath = _currentPath + "/" + name.Name + ".exe";
 					return Assembly.LoadFile(assemblyPath);
 				}
 				catch (Exception)
 				{
-					return Assembly.LoadFile(args.Name + ".dll");
+					var name = new AssemblyName(args.Name);
+					return Assembly.LoadFile(Path.GetDirectoryName(_currentPath) + "/" + name.Name + ".dll");
 				}
 			}
 		}
@@ -403,9 +398,9 @@ namespace VkBotCore.Plugins
 		internal bool IsAvailable(MethodInfo method, long groupId)
 		{
 			if (groupId == 0) return true;
-			var parrent = method.DeclaringType;
-			string _namespace = GetNamespaceParrant(parrent);
-			return _namespace == GetNamespaceParrant(GetType()) || Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[] { _namespace }).Contains(_namespace);
+			var parent = method.DeclaringType;
+			string _namespace = GetNamespaceChild(parent);
+			return _namespace == GetNamespaceChild(GetType()) || Core.Configuration.GetArray($"Config:Groups:{groupId}:AvailableNamespaces", new string[] { _namespace }).Contains(_namespace);
 		}
 
 		internal bool CorrectlyUsage(MethodInfo method, BaseChat chat)
@@ -418,10 +413,10 @@ namespace VkBotCore.Plugins
 
 		public VkCoreApiBase[] GetAvailableApis(Type type)
 		{
-			return Core.VkApi.GetAvailableApis(GetNamespaceParrant(type));
+			return Core.VkApi.GetAvailableApis(GetNamespaceChild(type));
 		}
 
-		private string GetNamespaceParrant(Type type)
+		private string GetNamespaceChild(Type type)
 		{
 			return type.Namespace.Split('.').First();
 		}

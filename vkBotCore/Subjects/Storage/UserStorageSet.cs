@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
 
 namespace VkBotCore.Subjects
 {
-	public class UsersStorageSet : Dictionary<long, VariableSet>
+	public class UsersStorageSet : ConcurrentDictionary<long, VariableSet>
 	{
 		public new VariableSet this[long userId]
 		{

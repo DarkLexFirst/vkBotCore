@@ -1,4 +1,5 @@
 ﻿using System;
+using VkNet.Enums.SafetyEnums;
 
 namespace VkBotCore.Subjects
 {
@@ -9,7 +10,7 @@ namespace VkBotCore.Subjects
 		long Id { get; set; }
 
 		bool IsChatAdmin(Chat chat);
-		string GetMentionLine();
+		string GetMentionLine(NameCase nameCase = null);
 	}
 
 	public class UserEventArgs : EventArgs

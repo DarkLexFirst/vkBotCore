@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using Newtonsoft.Json;
 
 namespace VkBotCore.Subjects
 {
 
 
-	public class VariableSet : Dictionary<string, string>
+	public class VariableSet : ConcurrentDictionary<string, string>
 	{
-		private Dictionary<string, object> _objectsCache { get; set; } = new Dictionary<string, object>();
+		private ConcurrentDictionary<string, object> _objectsCache { get; set; } = new ConcurrentDictionary<string, object>();
 
 		public new int Count { get => Math.Max(base.Count, _objectsCache.Count); }
 
@@ -28,8 +28,8 @@ namespace VkBotCore.Subjects
 			{
 				if (value == null)
 				{
-					Remove(key);
-					_objectsCache.Remove(key);
+					TryRemove(key, out _);
+					_objectsCache.TryRemove(key, out _);
 					return;
 				}
 				if (!TryAdd(key, value))
@@ -93,8 +93,8 @@ namespace VkBotCore.Subjects
 		{
 			if (value == null)
 			{
-				Remove(key);
-				_objectsCache.Remove(key);
+				TryRemove(key, out _);
+				_objectsCache.TryRemove(key, out _);
 				return;
 			}
 			if (!_objectsCache.TryAdd(key, value))
