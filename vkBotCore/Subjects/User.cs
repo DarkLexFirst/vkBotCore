@@ -78,7 +78,7 @@ namespace VkBotCore.Subjects
 			Storage = new Storage(this);
 		}
 
-		public User(VkCoreApiBase vkApi, long id, string firstName, string lastName)
+		internal User(VkCoreApiBase vkApi, long id, string firstName, string lastName)
 		{
 			VkApi = vkApi;
 			FirstName = firstName;
@@ -163,20 +163,7 @@ namespace VkBotCore.Subjects
 			else
 			{
 				var user = GetApiUser(nameCase: nameCase);
-				(string, string) _name;
-
-				if (nameCase == NameCase.Abl)
-					_name = (user.FirstNameAbl, user.LastNameAbl);
-				else if (nameCase == NameCase.Acc)
-					_name = (user.FirstNameAcc, user.LastNameAcc);
-				else if(nameCase == NameCase.Dat)
-					_name = (user.FirstNameDat, user.LastNameDat);
-				else if(nameCase == NameCase.Gen)
-					_name = (user.FirstNameGen, user.LastNameGen);
-				else if(nameCase == NameCase.Ins)
-					_name = (user.FirstNameIns, user.LastNameIns);
-				else
-					_name = (user.LastNameNom, user.LastNameNom);
+				(string, string) _name = (user.FirstName, user.LastName);
 
 				_userNames.Add(nameCase, _name);
 				return _name;

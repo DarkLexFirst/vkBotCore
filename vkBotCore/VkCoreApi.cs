@@ -15,7 +15,10 @@ namespace VkBotCore
 
 			var accesToken = Core.Configuration.GetValue<string>($"Config:AccessToken", null);
 			if (accesToken != null)
+			{
+				GroupId = Groups.GetById(null, null, null).First().Id;
 				Authorize(new ApiAuthParams { AccessToken = accesToken });
+			}
 		}
 
 		internal override void Initialize()

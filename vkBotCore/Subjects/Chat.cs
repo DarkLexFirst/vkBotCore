@@ -252,7 +252,7 @@ namespace VkBotCore.Subjects
 			return users.Select(m => User.GetMentionLine(m, val));
 		}
 
-		public static IEnumerable<string> GetMentions(IEnumerable<User> users, NameCase nameCase = null)
+		public static IEnumerable<string> GetMentions(IEnumerable<IUser> users, NameCase nameCase = null)
 		{
 			return users.Select(u => u.GetMentionLine(nameCase));
 		}
