@@ -20,5 +20,12 @@ namespace VkBotCore.Subjects
 			foreach (var set in this)
 				set.Value.SerializeAllCache();
 		}
+
+		public void RemoveAllEmpty()
+		{
+			foreach (var set in this)
+				if (set.Value.IsEmpty)
+					TryRemove(set.Key, out _);
+		}
 	}
 }

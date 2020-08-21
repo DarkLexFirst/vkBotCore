@@ -71,6 +71,8 @@ namespace VkBotCore.Subjects
 			storage.Variables.SerializeAllCache();
 			storage.UsersStorage.SerializeAllCache();
 
+			storage.UsersStorage.RemoveAllEmpty();
+
 			string path = GetFullFilePath(storage.Chat);
 			string json = JsonConvert.SerializeObject(storage, settings);
 

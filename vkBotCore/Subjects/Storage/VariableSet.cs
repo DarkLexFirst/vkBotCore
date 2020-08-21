@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace VkBotCore.Subjects
@@ -11,6 +14,10 @@ namespace VkBotCore.Subjects
 		private ConcurrentDictionary<string, object> _objectsCache { get; set; } = new ConcurrentDictionary<string, object>();
 
 		public new int Count { get => Math.Max(base.Count, _objectsCache.Count); }
+
+		public new bool IsEmpty { get => base.IsEmpty && _objectsCache.IsEmpty; }
+
+		public new ICollection<string> Keys { get => new ReadOnlyCollection<string>(Keys.Union(_objectsCache.Keys).ToList()); }
 
 		public new string this[string key]
 		{
@@ -106,6 +113,12 @@ namespace VkBotCore.Subjects
 		public bool IsObject(string key)
 		{
 			return _objectsCache.ContainsKey(key);
+		}
+
+		public new void Clear()
+		{
+			base.Clear();
+			_objectsCache.Clear();
 		}
 
 		internal string Serialize(string key, object value)
