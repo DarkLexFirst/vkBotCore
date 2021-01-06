@@ -31,7 +31,7 @@ namespace VkBotCore.Callback
 			}
 		}
 
-		private long _messageResendBlockTime = 10;
+		private long _messageResendBlockTime = 20;
 		public IActionResult Callback([FromBody]Updates updates)
 		{
 			try
@@ -53,6 +53,8 @@ namespace VkBotCore.Callback
 						if (updates == null) return;
 
 						var response = new VkResponse(updates.Object);
+
+						var update = GroupUpdate.FromJson(response);
 
 						switch (updates.Type)
 						{

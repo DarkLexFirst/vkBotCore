@@ -18,7 +18,7 @@ namespace VkBotCore
 		internal static Action OnDisable;
 		public static void Main(string[] args)
 		{
-			CultureInfo.CurrentCulture = new CultureInfo("ru-RU"); //fix datetime format on linux
+			CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU"); //fix datetime format on linux
 			CreateWebHostBuilder(args).Build().Run();
 			OnDisable?.Invoke();
 		}
