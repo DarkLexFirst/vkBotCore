@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="System.IO.Pipelines" Version="5.0.0-preview.7.20364.11" />
     <PackageReference Include="VkNet" Version="1.58.0" />
   </ItemGroup>
